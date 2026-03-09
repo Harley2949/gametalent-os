@@ -1,0 +1,92 @@
+// ============================================
+// Job Management Module
+// ============================================
+
+enum JobStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+  ARCHIVED
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+}
+
+enum WorkMode {
+  ONSITE
+  HYBRID
+  REMOTE
+}
+
+enum ExperienceLevel {
+  ENTRY
+  MID
+  SENIOR
+  LEAD
+  PRINCIPAL
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model Job {
+  id                String          @id @default(cuid())
+  title             String
+  description       String          @db.Text
+  requirements      String          @db.Text
+  responsibilities  String          @db.Text
+
+  // Job metadata
+  status            JobStatus       @default(DRAFT)
+  type              JobType         @default(FULL_TIME)
+  workMode          WorkMode        @default(ONSITE)
+  experienceLevel   ExperienceLevel
+  priority          Priority        @default(MEDIUM)
+
+  // Compensation
+  salaryMin         Int?
+  salaryMax         Int?
+  salaryCurrency    String          @default("USD")
+
+  // Location
+  location          String?
+  remoteRegions     String[]        // For remote jobs
+
+  // Department & Team
+  department        String
+  team              String?
+
+  // Hiring targets
+  targetCompanies   String[]        // Competitor companies to target
+  targetSkills      String[]        // Required/preferred skills
+
+  // Applicant tracking
+  applicantCount    Int             @default(0)
+  interviewCount    Int             @default(0)
+  offerCount        Int             @default(0)
+
+  // Dates
+  publishedAt       DateTime?
+  closedAt          DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  // Relations
+  createdBy         String
+  creator           User            @relation("JobCreator", fields: [createdBy], references: [id])
+  assignees         User[]          @relation("JobAssignee")
+  applications      Application[]
+
+  @@index([status])
+  @@index([department])
+  @@index([publishedAt])
+  @@map("jobs")
+}

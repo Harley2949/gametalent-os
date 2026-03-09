@@ -1,0 +1,64 @@
+// ============================================
+// Permissions & Roles Module
+// ============================================
+
+model Permission {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  resource    String   // e.g., "candidates", "jobs"
+  action      String   // e.g., "read", "write", "delete"
+  conditions  Json?    // Additional conditions
+
+  roles       RolePermission[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  id          String   @id @default(cuid())
+  roleId      String
+  permissionId String
+
+  // Custom conditions for this role
+  conditions  Json?
+
+  role        Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission  Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  isSystem    Boolean  @default(false) // System roles cannot be deleted
+
+  permissions RolePermission[]
+  users       UserRoleMapping[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("roles")
+}
+
+model UserRoleMapping {
+  id          String   @id @default(cuid())
+  userId      String
+  roleId      String
+
+  // Additional constraints
+  constraints Json?    // e.g., department restrictions
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+  @@map("user_role_mappings")
+}

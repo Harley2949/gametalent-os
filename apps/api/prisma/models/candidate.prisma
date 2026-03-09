@@ -1,0 +1,64 @@
+// ============================================
+// Candidate Management Module
+// ============================================
+
+enum CandidateStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+  BLACKLISTED
+}
+
+enum CandidateSource {
+  LINKEDIN
+  REFERRAL
+  CAREER_PAGE
+  AGENCY
+  HEADHUNT
+  OTHER
+}
+
+model Candidate {
+  id                String             @id @default(cuid())
+  email             String             @unique
+  name              String
+  phoneNumber       String?
+  avatar            String?
+  status            CandidateStatus    @default(ACTIVE)
+  source            CandidateSource
+  sourceUrl         String?            // Original profile URL
+
+  // Competitor tracking - JSONB field for flexible storage
+  // Structure: { companies: [{ companyId, companyName, projects[], relationship, confidence }] }
+  competitorMapping Json?
+
+  // Social links
+  linkedinUrl       String?
+  githubUrl         String?
+  portfolioUrl      String?
+
+  // Additional info
+  location          String?
+  currentCompany    String?
+  currentTitle      String?
+  expectedSalary    String?
+  noticePeriod      String?            // e.g., "2 weeks", "1 month"
+  yearsOfExperience Int?
+
+  // Notes
+  notes             String?
+  tags              String[]           // e.g., ["game-design", "unity", "senior"]
+
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  // Relations
+  resumes           Resume[]
+  applications      Application[]
+  feedback          Feedback[]
+  portal            CandidatePortal?
+  deduplicationLogs DeduplicationLog[]
+  salaryRecords     SalaryRecord[]
+
+  @@map("candidates")
+}

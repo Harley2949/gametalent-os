@@ -1,0 +1,73 @@
+// ============================================
+// Application Management Module
+// ============================================
+
+enum ApplicationStatus {
+  APPLIED
+  SCREENING
+  REVIEWED
+  SHORTLISTED
+  INTERVIEWING
+  INTERVIEW_PASSED  // 面试通过，等待 Offer
+  OFFERED
+  HIRED
+  REJECTED
+  WITHDRAWN
+}
+
+// Transparency level controls what information is visible to candidates
+enum TransparencyLevel {
+  STANDARD    // Full visibility
+  MINIMAL     // Limited info
+  CUSTOM      // Custom rules
+}
+
+model Application {
+  id                  String             @id @default(cuid())
+  jobId               String
+  candidateId         String
+  status              ApplicationStatus @default(APPLIED)
+
+  // Privacy control - for competitive hiring
+  transparencyLevel   TransparencyLevel  @default(STANDARD)
+  customVisibility    Json?              // Custom visibility rules
+
+  // Application details
+  coverLetter         String?            @db.Text
+  source              String?            // Where they applied from
+  referralSource      String?            // If referred
+
+  // Screening
+  screeningScore      Float?             // AI screening score 0-100
+  screeningNotes      String?            @db.Text
+  screenedAt          DateTime?
+  screenedBy          String?
+
+  // AI Matching
+  matchScore          Float?             // Overall match score 0-100
+  matchDetails        Json?              // Detailed match breakdown
+
+  // Timeline tracking
+  appliedAt           DateTime           @default(now())
+  firstResponseAt     DateTime?
+  lastContactAt       DateTime?
+  closedAt            DateTime?
+
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  // Relations
+  job                 Job                @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  candidate           Candidate          @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  reviewer            User?              @relation("ApplicationReviewer", fields: [screenedBy], references: [id])
+  interviews          Interview[]
+  feedback            Feedback[]
+  logs                ProcessLog[]
+  offer               Offer?
+
+  @@unique([jobId, candidateId])
+  @@index([jobId])
+  @@index([candidateId])
+  @@index([status])
+  @@map("applications")
+}

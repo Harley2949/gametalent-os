@@ -1,0 +1,89 @@
+// ============================================
+// Resume Parsing Module
+// ============================================
+
+model SourceChannel {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  type        String   // MANUAL, PLUGIN, API, SCRAPER
+  config      Json?    // Channel-specific configuration
+
+  isActive    Boolean  @default(true)
+  priority    Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("source_channels")
+}
+
+model ResumeParsing {
+  id          String   @id @default(cuid())
+  resumeId    String
+
+  // Parsing status
+  status      String   // PENDING, PROCESSING, COMPLETED, FAILED
+  progress    Int      @default(0)
+
+  // Parsing results
+  extractedData Json?
+  confidence    Float?
+  warnings      String[]
+  errors        String[]
+
+  // Processing metadata
+  parserVersion String?
+  processingTime Int? // milliseconds
+  queuedAt     DateTime @default(now())
+  startedAt    DateTime?
+  completedAt  DateTime?
+
+  resume      Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId])
+  @@index([status])
+  @@map("resume_parsings")
+}
+
+model SkillTag {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  category    String   // e.g., "game_engine", "programming_language", "art_style"
+  subcategory String?  // e.g., "ue5", "unity", "ta"
+
+  // Game industry specific
+  isGamingSpecific Boolean @default(false)
+  popularity   Int      @default(0) // How often this tag appears
+
+  // Related skills
+  relatedTags String[]
+
+  isActive    Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@map("skill_tags")
+}
+
+model DeduplicationLog {
+  id          String   @id @default(cuid())
+  candidateId String
+
+  // Match information
+  matchedCandidateId String?
+  matchScore    Float
+  matchReason   String[] // Why these were considered duplicates
+
+  // Action taken
+  action       String // MERGED, SKIPPED, FLAGGED
+  performedBy  String?
+
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+
+  @@index([candidateId])
+  @@map("deduplication_logs")
+}

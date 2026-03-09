@@ -1,0 +1,100 @@
+// ============================================
+// Workflow Management Module
+// ============================================
+
+model ProcessTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  isActive    Boolean  @default(true)
+  isDefault   Boolean  @default(false)
+
+  // Job type this template applies to
+  jobTypes    String[] // e.g., ["FULL_TIME", "CONTRACT"]
+
+  nodes       ProcessNode[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("process_templates")
+}
+
+model ProcessNode {
+  id          String   @id @default(cuid())
+  templateId  String?
+  name        String
+  label       String
+  description String?  @db.Text
+
+  // Node configuration
+  stage       ApplicationStatus // Which stage this node represents
+  order       Int              // Order in the workflow
+  isRequired  Boolean  @default(true)
+
+  // Requirements to proceed
+  requiredFields String[] // Fields that must be filled before proceeding
+
+  // Auto-advance configuration
+  autoAdvance Boolean  @default(false)
+  autoAdvanceRule Json? // Rule for auto-advancing
+
+  // Notifications
+  notifyCandidate Boolean  @default(false)
+  notifyInterviewers Boolean @default(false)
+  notificationTemplates Json?
+
+  template    ProcessTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([templateId])
+  @@map("process_nodes")
+}
+
+model ProcessRule {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  isActive    Boolean  @default(true)
+
+  // Rule type
+  ruleType    String // AUTO_ADVANCE, TIMEOUT_REMINDER, TIMEOUT_REJECT
+  triggerCondition Json // When to trigger
+
+  // Actions
+  actions     Json[] // Actions to execute
+
+  // Scope
+  appliesToJobs String[] // Job IDs this rule applies to (empty = all)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("process_rules")
+}
+
+model ProcessLog {
+  id          String   @id @default(cuid())
+  applicationId String
+  nodeId      String?
+
+  // What changed
+  fromStatus  ApplicationStatus
+  toStatus    ApplicationStatus
+
+  // Who made the change
+  changedBy   String
+  changeType  String // MANUAL, AUTO, SYSTEM
+
+  // Additional data
+  metadata    Json?
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+
+  @@index([applicationId])
+  @@map("process_logs")
+}

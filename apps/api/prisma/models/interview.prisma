@@ -1,0 +1,68 @@
+// ============================================
+// Interview Management Module
+// ============================================
+
+enum InterviewStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum InterviewType {
+  PHONE_SCREEN
+  VIDEO
+  ONSITE
+  TECHNICAL
+  BEHAVIORAL
+  PANEL
+  TAKE_HOME
+}
+
+enum InterviewStage {
+  SCREENING
+  FIRST_ROUND
+  SECOND_ROUND
+  FINAL_ROUND
+  TECHNICAL
+  CULTURAL
+  EXECUTIVE
+}
+
+model Interview {
+  id              String           @id @default(cuid())
+  applicationId   String
+  interviewerId   String
+  title           String
+  description     String?          @db.Text
+
+  status          InterviewStatus  @default(SCHEDULED)
+  type            InterviewType
+  stage           InterviewStage
+
+  // Scheduling
+  scheduledAt     DateTime
+  duration        Int              // Duration in minutes
+  location        String?          // Meeting link or physical location
+
+  // Evaluation
+  score           Int?             // 1-5 rating
+  notes           String?          @db.Text
+  feedback        Json?            // Structured feedback
+
+  // Follow-up
+  nextSteps       String?          @db.Text
+  followUpAt      DateTime?
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  // Relations
+  application     Application      @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  interviewer     User             @relation("InterviewInterviewer", fields: [interviewerId], references: [id])
+
+  @@index([applicationId])
+  @@index([interviewerId])
+  @@index([scheduledAt])
+  @@map("interviews")
+}

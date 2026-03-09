@@ -1,0 +1,71 @@
+// ============================================
+// Offer & Salary Module
+// ============================================
+
+model Offer {
+  id          String   @id @default(cuid())
+  applicationId String   @unique
+
+  // Salary details
+  baseSalary    Int?
+  bonus         Int?
+  equity        Json?    // Equity package details
+  totalComp     Int?
+
+  currency     String   @default("CNY")
+
+  // Offer status
+  status       String   // DRAFT, SENT, ACCEPTED, REJECTED, EXPIRED
+  sentAt       DateTime?
+  acceptedAt   DateTime?
+  expiresAt    DateTime?
+
+  // Negotiation
+  expectedSalary Int?
+  counterOffer  Json?
+
+  createdBy    String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  application  Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+  @@index([status])
+  @@map("offers")
+}
+
+model SalaryRecord {
+  id          String   @id @default(cuid())
+  candidateId String
+
+  // Salary breakdown
+  baseSalary    Int
+  bonus         Int?
+  equity        Int?
+  totalComp     Int
+
+  currency     String   @default("CNY")
+
+  // Context
+  jobTitle     String
+  level        String   // e.g., "Senior", "Lead"
+  department   String
+  location     String
+
+  // Source
+  offerId      String?  // If from actual offer
+  source       String   // ACTUAL_OFFER, EXPECTED, MARKET_DATA
+
+  // Metadata
+  effectiveDate DateTime
+  notes        String?
+
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime @default(now())
+
+  @@index([candidateId])
+  @@index([jobTitle])
+  @@map("salary_records")
+}

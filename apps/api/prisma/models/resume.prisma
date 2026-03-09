@@ -1,0 +1,41 @@
+// ============================================
+// Resume Management Module
+// ============================================
+
+enum ResumeStatus {
+  PARSING
+  READY
+  ERROR
+}
+
+model Resume {
+  id          String        @id @default(cuid())
+  candidateId String
+  title       String
+  fileName    String
+  fileUrl     String
+  fileSize    Int
+  fileType    String        // e.g., "application/pdf"
+
+  // Parsed data stored as JSONB for flexibility
+  rawData     Json?         // Raw extracted text/data
+  parsedData  Json?         // Structured parsed data
+
+  // AI Analysis
+  skills      String[]      // Extracted skills
+  experience  Json?         // Structured experience data
+  education   Json?         // Structured education data
+
+  status      ResumeStatus  @default(PARSING)
+  isPrimary   Boolean       @default(false)
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  candidate   Candidate     @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  parsings    ResumeParsing[]
+
+  @@index([candidateId])
+  @@map("resumes")
+}

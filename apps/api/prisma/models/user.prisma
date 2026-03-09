@@ -1,0 +1,44 @@
+// ============================================
+// User Management Module
+// ============================================
+
+enum UserRole {
+  ADMIN
+  RECRUITER
+  INTERVIEWER
+  HIRING_MANAGER
+  VIEWER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+}
+
+model User {
+  id            String      @id @default(cuid())
+  email         String      @unique
+  name          String
+  password      String
+  avatar        String?
+  role          UserRole    @default(RECRUITER)
+  status        UserStatus  @default(ACTIVE)
+  department    String?
+  title         String?
+  phoneNumber   String?
+  lastLoginAt   DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Relations
+  createdJobs   Job[]       @relation("JobCreator")
+  assignedJobs  Job[]       @relation("JobAssignee")
+  applications  Application[] @relation("ApplicationReviewer")
+  interviews    Interview[] @relation("InterviewInterviewer")
+  feedback      Feedback[]  @relation("FeedbackAuthor")
+  roleMappings  UserRoleMapping[]
+  createdNotes  InternalNote[] @relation("NoteCreator")
+
+  @@map("users")
+}

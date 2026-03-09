@@ -1,0 +1,54 @@
+// ============================================
+// Candidate Portal Module
+// ============================================
+
+model CandidatePortal {
+  id          String   @id @default(cuid())
+  candidateId String   @unique
+  accessToken String   @unique // Token for portal access
+  tokenExpiry DateTime?
+
+  // Portal access tracking
+  lastAccessAt DateTime?
+  accessCount  Int      @default(0)
+
+  // Preferences
+  language    String   @default("zh-CN")
+  timezone    String?
+
+  isActive    Boolean  @default(true)
+
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([accessToken])
+  @@map("candidate_portals")
+}
+
+model InternalNote {
+  id          String   @id @default(cuid())
+  candidateId String?
+  applicationId String?
+
+  // Strictly internal - never visible to candidates
+  title       String
+  content     String   @db.Text
+
+  // Classification
+  category    String   // e.g., "salary_negotiation", "culture_concern", "background_check"
+  sensitivity  String   @default("internal") // internal, confidential, restricted
+
+  // Access control
+  createdBy   String
+  visibleTo   String[] // Role IDs that can see this note
+  creator     User     @relation("NoteCreator", fields: [createdBy], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([candidateId])
+  @@index([applicationId])
+  @@map("internal_notes")
+}
