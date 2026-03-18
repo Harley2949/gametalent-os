@@ -1,0 +1,26 @@
+// ============================================
+// Extracted Skill Module
+// ============================================
+
+model ExtractedSkill {
+  id          String          @id @default(cuid())
+  resumeId    String
+
+  name        String
+  category    SkillCategory
+
+  proficiency SkillProficiency @default(INTERMEDIATE)
+  confidence  Float?
+
+  context     String?         @db.Text
+  yearsOfExperience Float?
+
+  createdAt   DateTime        @default(now())
+
+  // Relations
+  resume      Resume          @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId])
+  @@index([category])
+  @@map("extracted_skills")
+}

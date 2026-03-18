@@ -1,0 +1,42 @@
+// ============================================
+// Job Matching Module
+// ============================================
+
+enum MatchStatus {
+  PENDING
+  MATCHED
+  REJECTED
+  EXPIRED
+}
+
+model JobMatch {
+  id              String        @id @default(cuid())
+  jobId          String
+  candidateId    String
+
+  // 匹配分数
+  score           Float         @default(0)
+  matchPercent    Float?        // 匹配百分比 (0-100)
+
+  // 状态
+  status          MatchStatus   @default(PENDING)
+
+  // 匹配详情
+  matchedSkills    String[]     // 匹配的技能列表
+  missingSkills    String[]     // 缺失的技能列表
+  matchWeights    Json?        // 匹配权重详情
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  job             Job           @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  candidate       Candidate     @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, candidateId])
+  @@index([jobId])
+  @@index([candidateId])
+  @@index([status])
+  @@index([score])
+  @@map("job_matches")
+}

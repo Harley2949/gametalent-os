@@ -67,6 +67,7 @@ model Job {
   // Hiring targets
   targetCompanies   String[]        // Competitor companies to target
   targetSkills      String[]        // Required/preferred skills
+  matchWeights      Json?          // 匹配权重配置
 
   // Applicant tracking
   applicantCount    Int             @default(0)
@@ -84,9 +85,62 @@ model Job {
   creator           User            @relation("JobCreator", fields: [createdBy], references: [id])
   assignees         User[]          @relation("JobAssignee")
   applications      Application[]
+  jobSkills         JobSkill[]
+  jobMatches        JobMatch[]
 
   @@index([status])
   @@index([department])
   @@index([publishedAt])
   @@map("jobs")
+}
+
+// ============================================
+// Job Skills Module
+// ============================================
+
+enum SkillCategory {
+  PROGRAMMING
+  DESIGN
+  ART
+  AUDIO
+  PRODUCTION
+  TOOLS
+  SOFT_SKILLS
+  OTHER
+}
+
+enum SkillImportance {
+  REQUIRED
+  PREFERRED
+  BONUS
+}
+
+enum SkillProficiency {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+  MASTER
+}
+
+model JobSkill {
+  id              String            @id @default(cuid())
+  jobId           String
+
+  name            String
+  category        SkillCategory
+  importance      SkillImportance   @default(PREFERRED)
+  minProficiency  SkillProficiency?
+  minYears        Int?
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  // Relations
+  job             Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+  @@index([category])
+  @@index([importance])
+  @@map("job_skills")
 }

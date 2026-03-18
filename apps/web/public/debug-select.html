@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>下拉框调试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            border: 2px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+        }
+        .debug-info {
+            background: #f0f0f0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 下拉框调试页面</h1>
+
+    <div class="test-section">
+        <h2>测试1: 原生HTML Select（API数据）</h2>
+        <select id="native-candidates">
+            <option value="">加载中...</option>
+        </select>
+        <div id="native-candidates-info" class="debug-info">等待数据加载...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>测试2: 简单React Select（无数据）</h2>
+        <div id="react-select-container">
+            <button onclick="testClick()">点击测试 - 看控制台是否有反应</button>
+            <div id="click-count" class="debug-info">点击次数: 0</div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>测试3: 数据加载状态</h2>
+        <button onclick="testCandidateAPI()">测试候选人API</button>
+        <button onclick="testJobsAPI()">测试职位API</button>
+        <div id="api-status" class="debug-info">未测试</div>
+    </div>
+
+    <script>
+        let clickCount = 0;
+
+        // 测试1: 加载候选人数据到原生select
+        async function loadCandidateData() {
+            const infoDiv = document.getElementById('native-candidates-info');
+            const select = document.getElementById('native-candidates');
+
+            infoDiv.textContent = '正在加载候选人数据...';
+
+            try {
+                const response = await fetch('http://localhost:3006/api/candidates?skip=0&take=10');
+                const data = await response.json();
+
+                console.log('📊 候选人API响应:', data);
+
+                select.innerHTML = '<option value="">请选择候选人</option>';
+
+                if (data.data && data.data.length > 0) {
+                    data.data.forEach((candidate, index) => {
+                        const option = document.createElement('option');
+                        option.value = candidate.id;
+                        option.textContent = `${index + 1}. ${candidate.name} (${candidate.email})`;
+                        select.appendChild(option);
+                    });
+                    infoDiv.textContent = `✅ 成功加载 ${data.data.length} 个候选人\n第一个: ${data.data[0].name}`;
+                    infoDiv.style.background = '#d4edda';
+                } else {
+                    infoDiv.textContent = '❌ 候选人列表为空';
+                    infoDiv.style.background = '#f8d7da';
+                }
+            } catch (error) {
+                console.error('❌ 候选人API错误:', error);
+                infoDiv.textContent = `❌ API错误: ${error.message}`;
+                infoDiv.style.background = '#f8d7da';
+            }
+        }
+
+        // 测试2: 点击测试
+        function testClick() {
+            clickCount++;
+            document.getElementById('click-count').textContent = `点击次数: ${clickCount}`;
+            console.log('✅ 点击事件正常触发！点击次数:', clickCount);
+            alert('点击事件正常！说明JavaScript可以执行');
+        }
+
+        // 测试3: API测试
+        async function testCandidateAPI() {
+            const statusDiv = document.getElementById('api-status');
+            statusDiv.textContent = '正在测试候选人API...';
+
+            try {
+                const response = await fetch('http://localhost:3006/api/candidates?skip=0&take=1');
+                const data = await response.json();
+
+                console.log('✅ 候选人API正常:', data);
+                statusDiv.textContent = `✅ 候选人API正常\n返回 ${data.meta?.total || 0} 个候选人\n第一个: ${data.data?.[0]?.name || '无'}`;
+                statusDiv.style.background = '#d4edda';
+            } catch (error) {
+                console.error('❌ 候选人API失败:', error);
+                statusDiv.textContent = `❌ 候选人API失败: ${error.message}`;
+                statusDiv.style.background = '#f8d7da';
+            }
+        }
+
+        async function testJobsAPI() {
+            const statusDiv = document.getElementById('api-status');
+            statusDiv.textContent = '正在测试职位API...';
+
+            try {
+                const response = await fetch('http://localhost:3006/api/jobs?skip=0&take=1');
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                if (data.statusCode === 500) {
+                    throw new Error(data.message || '服务器内部错误');
+                }
+
+                console.log('✅ 职位API正常:', data);
+                statusDiv.textContent += '\n✅ 职位API正常';
+                statusDiv.style.background = '#d4edda';
+            } catch (error) {
+                console.error('❌ 职位API失败:', error);
+                statusDiv.textContent += `\n❌ 职位API失败: ${error.message}`;
+                statusDiv.style.background = '#fff3cd';
+            }
+        }
+
+        // 页面加载时自动测试
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('📄 页面加载完成');
+            loadCandidateData();
+        });
+    </script>
+</body>
+</html>

@@ -20,15 +20,23 @@ datasource db {
 // The following models are imported from individual modules:
 // - application.prisma
 // - candidate.prisma
+// - company.prisma
+// - education.prisma
+// - enums.prisma
+// - extracted-skill.prisma
 // - feedback.prisma
 // - interview.prisma
+// - job-match.prisma
 // - job.prisma
 // - offer.prisma
 // - parsing.prisma
 // - permission.prisma
 // - portal.prisma
+// - project-experience.prisma
 // - resume.prisma
+// - scheduling.prisma
 // - user.prisma
+// - work-experience.prisma
 // - workflow.prisma
 
 
@@ -132,7 +140,17 @@ enum CandidateSource {
   CAREER_PAGE
   AGENCY
   HEADHUNT
+  UPLOAD
   OTHER
+}
+
+enum CandidateStage {
+  INITIAL_SCREENING  // 初筛
+  INTERVIEW          // 面试
+  OFFER              // Offer
+  ONBOARDING         // 入职
+  HIRED              // 已入职
+  REJECTED           // 已拒绝
 }
 
 model Candidate {
@@ -142,6 +160,7 @@ model Candidate {
   phoneNumber       String?
   avatar            String?
   status            CandidateStatus    @default(ACTIVE)
+  stage             CandidateStage     @default(INITIAL_SCREENING)
   source            CandidateSource
   sourceUrl         String?            // Original profile URL
 
@@ -162,6 +181,16 @@ model Candidate {
   noticePeriod      String?            // e.g., "2 weeks", "1 month"
   yearsOfExperience Int?
 
+  // 新增字段
+  currentCompanyId    String?
+  educationLevel      EducationLevel?
+  school              String?
+  schoolType          SchoolType?
+  major               String?
+  graduationYear      Int?
+  isOverseasEducation Boolean?
+  isCurrentlyEmployed Boolean?
+
   // Notes
   notes             String?
   tags              String[]           // e.g., ["game-design", "unity", "senior"]
@@ -176,8 +205,221 @@ model Candidate {
   portal            CandidatePortal?
   deduplicationLogs DeduplicationLog[]
   salaryRecords     SalaryRecord[]
+  educations        Education[]
+  workExperiences   WorkExperience[]
+  jobMatches        JobMatch[]
+  stageHistory      CandidateStageHistory[]
 
   @@map("candidates")
+}
+
+// ============================================
+// Candidate Stage History
+// ============================================
+
+model CandidateStageHistory {
+  id           String       @id @default(cuid())
+  candidateId  String
+  fromStage    CandidateStage?
+  toStage      CandidateStage
+  changedBy    String?
+  changeReason String?
+  changeType   ChangeType   @default(MANUAL)
+  createdAt    DateTime     @default(now())
+
+  candidate    Candidate    @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@index([candidateId])
+  @@index([createdAt])
+  @@map("candidate_stage_history")
+}
+
+enum ChangeType {
+  MANUAL
+  AUTOMATIC
+}
+
+
+// ============================================
+// Module: company.prisma
+// ============================================
+
+// ============================================
+// Company Management Module
+// ============================================
+
+model Company {
+  id          String        @id @default(cuid())
+  name        String        @unique
+  nameEn      String?       @unique
+  shortName   String?
+  aliases     String[]      // 别名列表，用于模糊匹配
+
+  // 公司分类
+  type        CompanyType?
+  scale       CompanyScale?
+  country     String?
+  city        String?
+
+  // 竞争对手标记
+  isCompetitor Boolean      @default(false)
+  isActive    Boolean       @default(true)
+
+  // 游戏行业特有
+  gameGenres  String[]      // 擅长的游戏类型
+  platforms   String[]      // 擅长的平台
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  workExperiences WorkExperience[]
+
+  @@index([name])
+  @@index([isCompetitor])
+  @@index([type])
+  @@map("companies")
+}
+
+
+// ============================================
+// Module: education.prisma
+// ============================================
+
+// ============================================
+// Education Module
+// ============================================
+
+model Education {
+  id              String        @id @default(cuid())
+  candidateId     String
+
+  school          String
+  degree          String?       // 学位名称，如"学士"
+  major           String?
+  level           EducationLevel
+
+  // 学校分类
+  schoolType      SchoolType    @default(OTHER)
+  isOverseas      Boolean       @default(false)
+
+  // 时间
+  startDate       DateTime?
+  endDate         DateTime?
+  graduationYear  Int?
+
+  // 排名信息
+  qsRanking       Int?          // QS世界大学排名
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  candidate       Candidate     @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@index([candidateId])
+  @@index([school])
+  @@index([level])
+  @@map("educations")
+}
+
+
+// ============================================
+// Module: enums.prisma
+// ============================================
+
+// ============================================
+// Shared Enums Module
+// ============================================
+
+enum EducationLevel {
+  HIGH_SCHOOL
+  VOCATIONAL
+  BACHELOR
+  MASTER
+  PHD
+  POST_DOCTOR
+  OTHER
+}
+
+enum SchoolType {
+  DOMESTIC_PUBLIC
+  DOMESTIC_PRIVATE
+  OVERSEAS
+  TOP_985
+  PROJECT_985
+  PROJECT_211
+  DOUBLE_FIRST
+  PROVINCIAL_KEY
+  ORDINARY_BACHELOR
+  VOCATIONAL
+  OTHER
+}
+
+enum CompanyType {
+  GAME_STUDIO
+  GAME_DEVELOPER
+  GAME_PUBLISHER
+  GAME_PLATFORM
+  TECH_COMPANY
+  STUDIO
+  PLATFORM
+  PUBLISHER
+  AGENCY
+  OUTSOURCE
+  OTHER
+}
+
+enum CompanyScale {
+  STARTUP      // 1-10人
+  SMALL        // 11-50人
+  MEDIUM       // 51-200人
+  LARGE        // 201-1000人
+  GIANT        // 1000+人
+}
+
+enum ProjectRole {
+  PROGRAMMER
+  TECH_LEAD
+  LEAD
+  ARTIST
+  ART_DIRECTOR
+  CREATIVE_DIRECTOR
+  DESIGNER
+  PRODUCER
+  OTHER
+}
+
+
+// ============================================
+// Module: extracted-skill.prisma
+// ============================================
+
+// ============================================
+// Extracted Skill Module
+// ============================================
+
+model ExtractedSkill {
+  id          String          @id @default(cuid())
+  resumeId    String
+
+  name        String
+  category    SkillCategory
+
+  proficiency SkillProficiency @default(INTERMEDIATE)
+  confidence  Float?
+
+  context     String?         @db.Text
+  yearsOfExperience Float?
+
+  createdAt   DateTime        @default(now())
+
+  // Relations
+  resume      Resume          @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId])
+  @@index([category])
+  @@map("extracted_skills")
 }
 
 
@@ -298,11 +540,61 @@ model Interview {
   // Relations
   application     Application      @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   interviewer     User             @relation("InterviewInterviewer", fields: [interviewerId], references: [id])
+  invitation      InterviewInvitation?
+  reminders       InterviewReminder[]
 
   @@index([applicationId])
   @@index([interviewerId])
   @@index([scheduledAt])
   @@map("interviews")
+}
+
+
+// ============================================
+// Module: job-match.prisma
+// ============================================
+
+// ============================================
+// Job Matching Module
+// ============================================
+
+enum MatchStatus {
+  PENDING
+  MATCHED
+  REJECTED
+  EXPIRED
+}
+
+model JobMatch {
+  id              String        @id @default(cuid())
+  jobId          String
+  candidateId    String
+
+  // 匹配分数
+  score           Float         @default(0)
+  matchPercent    Float?        // 匹配百分比 (0-100)
+
+  // 状态
+  status          MatchStatus   @default(PENDING)
+
+  // 匹配详情
+  matchedSkills    String[]     // 匹配的技能列表
+  missingSkills    String[]     // 缺失的技能列表
+  matchWeights    Json?        // 匹配权重详情
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  job             Job           @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  candidate       Candidate     @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, candidateId])
+  @@index([jobId])
+  @@index([candidateId])
+  @@index([status])
+  @@index([score])
+  @@map("job_matches")
 }
 
 
@@ -379,6 +671,7 @@ model Job {
   // Hiring targets
   targetCompanies   String[]        // Competitor companies to target
   targetSkills      String[]        // Required/preferred skills
+  matchWeights      Json?          // 匹配权重配置
 
   // Applicant tracking
   applicantCount    Int             @default(0)
@@ -396,11 +689,64 @@ model Job {
   creator           User            @relation("JobCreator", fields: [createdBy], references: [id])
   assignees         User[]          @relation("JobAssignee")
   applications      Application[]
+  jobSkills         JobSkill[]
+  jobMatches        JobMatch[]
 
   @@index([status])
   @@index([department])
   @@index([publishedAt])
   @@map("jobs")
+}
+
+// ============================================
+// Job Skills Module
+// ============================================
+
+enum SkillCategory {
+  PROGRAMMING
+  DESIGN
+  ART
+  AUDIO
+  PRODUCTION
+  TOOLS
+  SOFT_SKILLS
+  OTHER
+}
+
+enum SkillImportance {
+  REQUIRED
+  PREFERRED
+  BONUS
+}
+
+enum SkillProficiency {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+  MASTER
+}
+
+model JobSkill {
+  id              String            @id @default(cuid())
+  jobId           String
+
+  name            String
+  category        SkillCategory
+  importance      SkillImportance   @default(PREFERRED)
+  minProficiency  SkillProficiency?
+  minYears        Int?
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  // Relations
+  job             Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+  @@index([category])
+  @@index([importance])
+  @@map("job_skills")
 }
 
 
@@ -707,6 +1053,48 @@ model InternalNote {
 
 
 // ============================================
+// Module: project-experience.prisma
+// ============================================
+
+// ============================================
+// Project Experience Module
+// ============================================
+
+model ProjectExperience {
+  id              String        @id @default(cuid())
+  resumeId        String
+
+  projectName     String
+  projectType     String        // GAME, WEB, MOBILE, OTHER
+  description     String?       @db.Text
+
+  // 角色信息
+  role            ProjectRole?
+  customRole      String?       // 自定义角色
+
+  // 技术栈
+  techStack       String[]
+
+  // 成果
+  achievements    String?       @db.Text
+
+  // 项目规模
+  teamSize        Int?
+  duration        String?       // 如 "3个月", "1年"
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  resume          Resume        @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId])
+  @@index([projectName])
+  @@map("project_experiences")
+}
+
+
+// ============================================
 // Module: resume.prisma
 // ============================================
 
@@ -733,10 +1121,16 @@ model Resume {
   rawData     Json?         // Raw extracted text/data
   parsedData  Json?         // Structured parsed data
 
+  // 新增字段（兼容性）
+  rawText         String?       @db.Text  // 兼容性字段，实际上是 rawData
+  errorMessage    String?       @db.Text  // 解析错误信息
+  parsedAt        DateTime?               // 解析完成时间
+  parserVersion   String?                 // 解析器版本
+
   // AI Analysis
-  skills      String[]      // Extracted skills
-  experience  Json?         // Structured experience data
-  education   Json?         // Structured education data
+  skills          String[]      // Extracted skills
+  experience      Json?         // Structured experience data
+  education       Json?         // Structured education data
 
   status      ResumeStatus  @default(PARSING)
   isPrimary   Boolean       @default(false)
@@ -747,9 +1141,199 @@ model Resume {
   // Relations
   candidate   Candidate     @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   parsings    ResumeParsing[]
+  extractedSkills ExtractedSkill[]
+  projectExperiences ProjectExperience[]
 
   @@index([candidateId])
   @@map("resumes")
+}
+
+
+// ============================================
+// Module: scheduling.prisma
+// ============================================
+
+// ============================================
+// Smart Interview Scheduling Module
+// ============================================
+
+// User availability configuration for scheduling
+model UserAvailability {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+
+  // Working hours configuration
+  workDays        Int[]    @default([1, 2, 3, 4, 5]) // Monday=1, Friday=5
+  workStartAt     String   @default("09:00") // HH:mm format
+  workEndAt       String   @default("18:00")
+
+  // Break times
+  breakStartAt    String?  @default("12:00")
+  breakEndAt      String?  @default("13:00")
+
+  // Timezone
+  timezone        String   @default("Asia/Shanghai")
+
+  // Blackout dates (holidays, vacation, etc.)
+  blackoutDates   DateTime[]
+
+  // Minimum booking notice (in hours)
+  minNoticeHours  Int      @default(2)
+
+  // Maximum booking window (in days)
+  maxBookingDays  Int      @default(30)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relation
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_availabilities")
+}
+
+// Calendar integration configuration (Google, Outlook, Feishu, etc.)
+model CalendarIntegration {
+  id              String   @id @default(cuid())
+  userId          String
+
+  provider        String   // GOOGLE, OUTLOOK, FEISHU, DINGTALK
+  accessToken     String   @db.Text
+  refreshToken    String?  @db.Text
+
+  // Calendar ID to sync from
+  calendarId      String
+
+  // Sync settings
+  autoSync        Boolean  @default(true)
+  priority        Int      @default(0)
+  lastSyncAt      DateTime?
+  syncError       String?
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relation
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+  @@index([userId])
+  @@map("calendar_integrations")
+}
+
+// Interview invitation tracking
+model InterviewInvitation {
+  id              String   @id @default(cuid())
+  interviewId     String   @unique
+
+  // Invitation status
+  status          String   @default("PENDING") // PENDING, ACCEPTED, DECLINED, EXPIRED
+
+  // Candidate response
+  respondedAt     DateTime?
+  declinedReason  String?
+
+  // Invitation metadata
+  sentAt          DateTime @default(now())
+  expiresAt       DateTime?
+
+  // Reminders sent
+  remindersSent   Int      @default(0)
+  lastReminderAt  DateTime?
+
+  // Email tracking
+  emailSentAt     DateTime?
+  emailOpenedAt   DateTime?
+
+  interview       Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+
+  @@index([interviewId])
+  @@index([status])
+  @@map("interview_invitations")
+}
+
+// Interview reminder queue
+model InterviewReminder {
+  id              String   @id @default(cuid())
+  interviewId     String
+
+  // Reminder type
+  type            String   // BEFORE_24H, BEFORE_1H, NO_SHOW, FOLLOW_UP
+
+  // Scheduled delivery
+  scheduledAt     DateTime
+
+  // Delivery status
+  status          String   @default("PENDING") // PENDING, SENT, FAILED, CANCELLED
+
+  // Delivery result
+  sentAt          DateTime?
+  error           String?
+
+  // Retry count
+  retryCount      Int      @default(0)
+
+  createdAt       DateTime @default(now())
+
+  interview       Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+
+  @@index([interviewId, scheduledAt])
+  @@index([status, scheduledAt])
+  @@map("interview_reminders")
+}
+
+// Suggested time slots for interviews (cache)
+model SuggestedTimeSlot {
+  id              String   @id @default(cuid())
+  interviewId     String?
+
+  // For batch scheduling suggestions (without specific interview yet)
+  applicationId   String?
+
+  // Time slot details
+  suggestedAt     DateTime
+  duration        Int
+  interviewerIds  String[]
+
+  // Scoring for ranking
+  score           Float?
+  reasons         String[] // Reasons for this suggestion
+
+  // Status
+  status          String   @default("AVAILABLE") // AVAILABLE, TAKEN, EXPIRED
+
+  // Validity
+  validUntil      DateTime
+
+  createdAt       DateTime @default(now())
+
+  @@index([interviewId])
+  @@index([applicationId])
+  @@index([suggestedAt])
+  @@map("suggested_time_slots")
+}
+
+// Interview availability cache (for faster lookups)
+model InterviewAvailability {
+  id              String   @id @default(cuid())
+  userId          String
+  date            DateTime // The date being queried
+
+  // Available slots as JSON array
+  // Format: [{ "start": "2024-01-15T10:00:00Z", "end": "2024-01-15T11:00:00Z" }]
+  availableSlots  Json
+
+  // Cache metadata
+  cachedAt        DateTime @default(now())
+  expiresAt       DateTime
+
+  // Relation
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId, date])
+  @@map("interview_availabilities")
 }
 
 
@@ -798,8 +1382,58 @@ model User {
   feedback      Feedback[]  @relation("FeedbackAuthor")
   roleMappings  UserRoleMapping[]
   createdNotes  InternalNote[] @relation("NoteCreator")
+  availability  UserAvailability?
+  calendarIntegrations CalendarIntegration[]
+  availabilities InterviewAvailability[]
 
   @@map("users")
+}
+
+
+// ============================================
+// Module: work-experience.prisma
+// ============================================
+
+// ============================================
+// Work Experience Module
+// ============================================
+
+model WorkExperience {
+  id              String        @id @default(cuid())
+  candidateId     String
+
+  // 公司信息
+  companyId       String?
+  companyName     String        // 冗余存储，即使没有关联公司也能显示
+  title           String
+  level           String?       // 职级，如"高级"、"资深"
+  department      String?       // 部门
+  location        String?       // 工作地点
+
+  // 时间
+  startDate       DateTime
+  endDate         DateTime?
+  isCurrent       Boolean       @default(false)
+
+  // 目标公司标记（竞争对手公司）
+  isTargetCompany Boolean       @default(false)
+
+  // 详情
+  description     String?       @db.Text
+  achievements    String?       @db.Text
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  candidate       Candidate     @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  company         Company?      @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  @@index([candidateId])
+  @@index([companyId])
+  @@index([companyName])
+  @@index([isCurrent])
+  @@map("work_experiences")
 }
 
 

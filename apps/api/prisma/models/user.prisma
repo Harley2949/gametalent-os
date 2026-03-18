@@ -39,6 +39,9 @@ model User {
   feedback      Feedback[]  @relation("FeedbackAuthor")
   roleMappings  UserRoleMapping[]
   createdNotes  InternalNote[] @relation("NoteCreator")
+  availability  UserAvailability?
+  calendarIntegrations CalendarIntegration[]
+  availabilities InterviewAvailability[]
 
   @@map("users")
 }

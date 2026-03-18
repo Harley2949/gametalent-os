@@ -1,0 +1,36 @@
+// ============================================
+// Education Module
+// ============================================
+
+model Education {
+  id              String        @id @default(cuid())
+  candidateId     String
+
+  school          String
+  degree          String?       // 学位名称，如"学士"
+  major           String?
+  level           EducationLevel
+
+  // 学校分类
+  schoolType      SchoolType    @default(OTHER)
+  isOverseas      Boolean       @default(false)
+
+  // 时间
+  startDate       DateTime?
+  endDate         DateTime?
+  graduationYear  Int?
+
+  // 排名信息
+  qsRanking       Int?          // QS世界大学排名
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  candidate       Candidate     @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@index([candidateId])
+  @@index([school])
+  @@index([level])
+  @@map("educations")
+}

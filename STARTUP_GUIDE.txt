@@ -1,0 +1,73 @@
+========================================
+GameTalent OS - Startup Guide
+========================================
+
+Current Status:
+✅ PostgreSQL 17 running on port 5433
+✅ Database 'gametalent_os' created and seeded
+✅ Prisma client generated
+⚠️ Backend has TypeScript compilation issues
+✅ Frontend ready to run
+
+========================================
+Option 1: Start Frontend Only (Recommended)
+========================================
+
+Open a terminal and run:
+cd "C:\Users\admin\resume-analyzer\AI原生招聘系统-claude\apps\web"
+npm run dev
+
+Then open: http://localhost:3000
+
+========================================
+Option 2: Start Backend (May Have Errors)
+========================================
+
+Open a terminal and run:
+cd "C:\Users\admin\resume-analyzer\AI原生招聘系统-claude\apps\api"
+set DATABASE_URL=postgresql://gametalent:gametalent_password@localhost:5433/gametalent_os
+npm run start:dev
+
+Then open: http://localhost:3001/api/docs
+
+========================================
+Database Credentials:
+========================================
+
+Admin User:
+  Email: admin@gametalent.os
+  Password: admin123
+
+Recruiter User:
+  Email: recruiter@gametalent.os
+  Password: recruiter123
+
+Database:
+  Host: localhost:5433
+  Database: gametalent_os
+  User: gametalent
+  Password: gametalent_password
+
+========================================
+Known Issues:
+========================================
+
+1. AI Module - TypeScript errors with Prisma types
+   Solution: Module has been disabled in app.module.ts
+
+2. Background tasks - Output not captured properly
+   Solution: Run servers in separate terminals manually
+
+3. Module resolution - @gametalent/db not found
+   Solution: Changed to @prisma/client imports
+
+========================================
+Next Steps:
+========================================
+
+1. Get the frontend running (should work now)
+2. Fix TypeScript errors in backend
+3. Re-enable AI module once types are fixed
+4. Test the full application
+
+========================================

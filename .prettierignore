@@ -1,0 +1,57 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+coverage/
+.turbo/
+
+# Cache
+.cache/
+.parcel-cache/
+.vscode/
+.idea/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Generated files
+*.generated.ts
+*.generated.js
+schema.prisma
+migrations/
+
+# Misc
+.DS_Store
+*.pem
+LICENSE
+
+# Documentation (keep formatting minimal)
+CHANGELOG.md
+.md
+
+# Config files (keep them readable)
+*.config.js
+*.config.ts
+.eslintrc*
+.prettierrc*
+.turbo/
+tsconfig.json

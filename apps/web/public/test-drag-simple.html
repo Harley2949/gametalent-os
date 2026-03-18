@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>拖拽功能调试</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .kanban-board {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .column {
+      flex: 1;
+      min-width: 250px;
+      background: white;
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .column-header {
+      font-weight: bold;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .column.drag-over {
+      background: #e3f2fd;
+      border: 2px solid #2196f3;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 8px;
+      cursor: grab;
+      user-select: none;
+      transition: all 0.2s;
+    }
+
+    .card:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .card:active {
+      cursor: grabbing;
+    }
+
+    .card.dragging {
+      opacity: 0.4;
+      transform: scale(0.95);
+    }
+
+    .drop-zone {
+      min-height: 100px;
+      border: 2px dashed #ccc;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+    }
+
+    .drop-zone.drag-over {
+      border-color: #2196f3;
+      background: #e3f2fd;
+      color: #2196f3;
+    }
+
+    .log {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 16px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12px;
+    }
+
+    .log-entry {
+      margin-bottom: 4px;
+      padding: 4px;
+      border-radius: 4px;
+    }
+
+    .log-entry.drag-start {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .log-entry.drag-over {
+      background: #fff3e0;
+      color: #e65100;
+    }
+
+    .log-entry.drop {
+      background: #e3f2fd;
+      color: #1565c0;
+    }
+
+    .log-entry.error {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    .test-info {
+      background: #fff9c4;
+      border: 1px solid #fbc02d;
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 拖拽功能调试工具</h1>
+
+    <div class="test-info">
+      <strong>测试说明：</strong><br>
+      1. 尝试拖动左侧列中的卡片到右侧列<br>
+      2. 观察下方日志输出<br>
+      3. 检查卡片是否移动到目标列<br>
+      4. 如果有任何问题，请查看日志中的错误信息
+    </div>
+
+    <div class="kanban-board">
+      <div class="column" data-status="todo">
+        <div class="column-header">待办 (TODO)</div>
+        <div class="card" draggable="true" data-id="1">
+          <strong>任务1</strong><br>
+          <small>这是一个可拖拽的卡片</small>
+        </div>
+        <div class="card" draggable="true" data-id="2">
+          <strong>任务2</strong><br>
+          <small>拖动我到其他列</small>
+        </div>
+        <div class="card" draggable="true" data-id="3">
+          <strong>任务3</strong><br>
+          <small>测试拖拽功能</small>
+        </div>
+      </div>
+
+      <div class="column" data-status="in-progress">
+        <div class="column-header">进行中 (IN PROGRESS)</div>
+        <div class="drop-zone">
+          拖放到这里
+        </div>
+      </div>
+
+      <div class="column" data-status="done">
+        <div class="column-header">完成 (DONE)</div>
+        <div class="drop-zone">
+          拖放到这里
+        </div>
+      </div>
+    </div>
+
+    <h2>📋 拖拽日志</h2>
+    <div class="log" id="dragLog"></div>
+  </div>
+
+  <script>
+    const logContainer = document.getElementById('dragLog');
+    let draggedElement = null;
+    let draggedData = null;
+
+    function addLog(message, type = 'info') {
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
+      logContainer.insertBefore(entry, logContainer.firstChild);
+
+      // 保持日志数量在合理范围
+      while (logContainer.children.length > 50) {
+        logContainer.removeChild(logContainer.lastChild);
+      }
+    }
+
+    // 拖拽开始
+    document.addEventListener('dragstart', (e) => {
+      const card = e.target.closest('.card');
+      if (!card) return;
+
+      draggedElement = card;
+      draggedData = {
+        id: card.dataset.id,
+        html: card.innerHTML
+      };
+
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', card.dataset.id);
+
+      card.classList.add('dragging');
+      addLog(`🎯 开始拖拽: 卡片 ${card.dataset.id}`, 'drag-start');
+    });
+
+    // 拖拽结束
+    document.addEventListener('dragend', (e) => {
+      const card = e.target.closest('.card');
+      if (!card) return;
+
+      card.classList.remove('dragging');
+      addLog(`✅ 拖拽结束: 卡片 ${card.dataset.id}`, 'drag-end');
+
+      // 清理所有高亮
+      document.querySelectorAll('.column').forEach(col => {
+        col.classList.remove('drag-over');
+      });
+      document.querySelectorAll('.drop-zone').forEach(zone => {
+        zone.classList.remove('drag-over');
+      });
+
+      draggedElement = null;
+      draggedData = null;
+    });
+
+    // 拖拽经过
+    document.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+
+      const column = e.target.closest('.column');
+      const dropZone = e.target.closest('.drop-zone');
+
+      // 清除之前的高亮
+      document.querySelectorAll('.column').forEach(col => {
+        col.classList.remove('drag-over');
+      });
+      document.querySelectorAll('.drop-zone').forEach(zone => {
+        zone.classList.remove('drag-over');
+      });
+
+      // 添加新高亮
+      if (column) {
+        column.classList.add('drag-over');
+        addLog(`📍 拖拽经过列: ${column.dataset.status}`, 'drag-over');
+      } else if (dropZone) {
+        dropZone.classList.add('drag-over');
+        const column = dropZone.closest('.column');
+        addLog(`📍 拖拽经过放置区: ${column ? column.dataset.status : '?'}`, 'drag-over');
+      }
+    });
+
+    // 拖拽离开
+    document.addEventListener('dragleave', (e) => {
+      const column = e.target.closest('.column');
+      if (column) {
+        const rect = column.getBoundingClientRect();
+        const x = e.clientX;
+        const y = e.clientY;
+
+        // 只在真正离开时移除高亮
+        if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+          column.classList.remove('drag-over');
+        }
+      }
+    });
+
+    // 放置
+    document.addEventListener('drop', (e) => {
+      e.preventDefault();
+
+      const column = e.target.closest('.column');
+      const dropZone = e.target.closest('.drop-zone');
+
+      let targetColumn = column || (dropZone ? dropZone.closest('.column') : null);
+
+      if (targetColumn && draggedData) {
+        const newStatus = targetColumn.dataset.status;
+
+        addLog(`🎯 放置卡片 ${draggedData.id} 到列 ${newStatus}`, 'drop');
+
+        // 移动卡片
+        if (draggedElement) {
+          const newCard = draggedElement.cloneNode(true);
+          newCard.classList.remove('dragging');
+
+          const dropZone = targetColumn.querySelector('.drop-zone');
+          if (dropZone) {
+            dropZone.parentNode.removeChild(dropZone);
+          }
+
+          targetColumn.appendChild(newCard);
+
+          addLog(`✅ 卡片 ${draggedData.id} 成功移动到 ${newStatus}`, 'drop');
+        }
+      } else {
+        addLog(`❌ 放置失败：无效的目标`, 'error');
+      }
+    });
+
+    // 浏览器兼容性检查
+    window.addEventListener('load', () => {
+      addLog('✅ 页面加载完成');
+      addLog(`🌐 浏览器: ${navigator.userAgent}`);
+
+      // 检查拖拽API支持
+      const dragDropSupported = 'draggable' in document.createElement('div');
+      addLog(`🔧 HTML5拖拽API支持: ${dragDropSupported ? '是' : '否'}`);
+
+      // 检查可拖拽元素
+      const draggableCount = document.querySelectorAll('[draggable="true"]').length;
+      addLog(`📊 可拖拽元素数量: ${draggableCount}`);
+
+      addLog('💡 提示：现在可以尝试拖动卡片');
+    });
+  </script>
+</body>
+</html>

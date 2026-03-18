@@ -1,0 +1,182 @@
+// ============================================
+// Smart Interview Scheduling Module
+// ============================================
+
+// User availability configuration for scheduling
+model UserAvailability {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+
+  // Working hours configuration
+  workDays        Int[]    @default([1, 2, 3, 4, 5]) // Monday=1, Friday=5
+  workStartAt     String   @default("09:00") // HH:mm format
+  workEndAt       String   @default("18:00")
+
+  // Break times
+  breakStartAt    String?  @default("12:00")
+  breakEndAt      String?  @default("13:00")
+
+  // Timezone
+  timezone        String   @default("Asia/Shanghai")
+
+  // Blackout dates (holidays, vacation, etc.)
+  blackoutDates   DateTime[]
+
+  // Minimum booking notice (in hours)
+  minNoticeHours  Int      @default(2)
+
+  // Maximum booking window (in days)
+  maxBookingDays  Int      @default(30)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relation
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_availabilities")
+}
+
+// Calendar integration configuration (Google, Outlook, Feishu, etc.)
+model CalendarIntegration {
+  id              String   @id @default(cuid())
+  userId          String
+
+  provider        String   // GOOGLE, OUTLOOK, FEISHU, DINGTALK
+  accessToken     String   @db.Text
+  refreshToken    String?  @db.Text
+
+  // Calendar ID to sync from
+  calendarId      String
+
+  // Sync settings
+  autoSync        Boolean  @default(true)
+  priority        Int      @default(0)
+  lastSyncAt      DateTime?
+  syncError       String?
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relation
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+  @@index([userId])
+  @@map("calendar_integrations")
+}
+
+// Interview invitation tracking
+model InterviewInvitation {
+  id              String   @id @default(cuid())
+  interviewId     String   @unique
+
+  // Invitation status
+  status          String   @default("PENDING") // PENDING, ACCEPTED, DECLINED, EXPIRED
+
+  // Candidate response
+  respondedAt     DateTime?
+  declinedReason  String?
+
+  // Invitation metadata
+  sentAt          DateTime @default(now())
+  expiresAt       DateTime?
+
+  // Reminders sent
+  remindersSent   Int      @default(0)
+  lastReminderAt  DateTime?
+
+  // Email tracking
+  emailSentAt     DateTime?
+  emailOpenedAt   DateTime?
+
+  interview       Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+
+  @@index([interviewId])
+  @@index([status])
+  @@map("interview_invitations")
+}
+
+// Interview reminder queue
+model InterviewReminder {
+  id              String   @id @default(cuid())
+  interviewId     String
+
+  // Reminder type
+  type            String   // BEFORE_24H, BEFORE_1H, NO_SHOW, FOLLOW_UP
+
+  // Scheduled delivery
+  scheduledAt     DateTime
+
+  // Delivery status
+  status          String   @default("PENDING") // PENDING, SENT, FAILED, CANCELLED
+
+  // Delivery result
+  sentAt          DateTime?
+  error           String?
+
+  // Retry count
+  retryCount      Int      @default(0)
+
+  createdAt       DateTime @default(now())
+
+  interview       Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+
+  @@index([interviewId, scheduledAt])
+  @@index([status, scheduledAt])
+  @@map("interview_reminders")
+}
+
+// Suggested time slots for interviews (cache)
+model SuggestedTimeSlot {
+  id              String   @id @default(cuid())
+  interviewId     String?
+
+  // For batch scheduling suggestions (without specific interview yet)
+  applicationId   String?
+
+  // Time slot details
+  suggestedAt     DateTime
+  duration        Int
+  interviewerIds  String[]
+
+  // Scoring for ranking
+  score           Float?
+  reasons         String[] // Reasons for this suggestion
+
+  // Status
+  status          String   @default("AVAILABLE") // AVAILABLE, TAKEN, EXPIRED
+
+  // Validity
+  validUntil      DateTime
+
+  createdAt       DateTime @default(now())
+
+  @@index([interviewId])
+  @@index([applicationId])
+  @@index([suggestedAt])
+  @@map("suggested_time_slots")
+}
+
+// Interview availability cache (for faster lookups)
+model InterviewAvailability {
+  id              String   @id @default(cuid())
+  userId          String
+  date            DateTime // The date being queried
+
+  // Available slots as JSON array
+  // Format: [{ "start": "2024-01-15T10:00:00Z", "end": "2024-01-15T11:00:00Z" }]
+  availableSlots  Json
+
+  // Cache metadata
+  cachedAt        DateTime @default(now())
+  expiresAt       DateTime
+
+  // Relation
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId, date])
+  @@map("interview_availabilities")
+}

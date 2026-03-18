@@ -15,7 +15,17 @@ enum CandidateSource {
   CAREER_PAGE
   AGENCY
   HEADHUNT
+  UPLOAD
   OTHER
+}
+
+enum CandidateStage {
+  INITIAL_SCREENING  // 初筛
+  INTERVIEW          // 面试
+  OFFER              // Offer
+  ONBOARDING         // 入职
+  HIRED              // 已入职
+  REJECTED           // 已拒绝
 }
 
 model Candidate {
@@ -25,6 +35,7 @@ model Candidate {
   phoneNumber       String?
   avatar            String?
   status            CandidateStatus    @default(ACTIVE)
+  stage             CandidateStage     @default(INITIAL_SCREENING)
   source            CandidateSource
   sourceUrl         String?            // Original profile URL
 
@@ -45,6 +56,16 @@ model Candidate {
   noticePeriod      String?            // e.g., "2 weeks", "1 month"
   yearsOfExperience Int?
 
+  // 新增字段
+  currentCompanyId    String?
+  educationLevel      EducationLevel?
+  school              String?
+  schoolType          SchoolType?
+  major               String?
+  graduationYear      Int?
+  isOverseasEducation Boolean?
+  isCurrentlyEmployed Boolean?
+
   // Notes
   notes             String?
   tags              String[]           // e.g., ["game-design", "unity", "senior"]
@@ -59,6 +80,9 @@ model Candidate {
   portal            CandidatePortal?
   deduplicationLogs DeduplicationLog[]
   salaryRecords     SalaryRecord[]
+  educations        Education[]
+  workExperiences   WorkExperience[]
+  jobMatches        JobMatch[]
 
   @@map("candidates")
 }

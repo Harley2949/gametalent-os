@@ -1,0 +1,1388 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// User Management
+// ============================================
+
+enum UserRole {
+  ADMIN
+  RECRUITER
+  INTERVIEWER
+  HIRING_MANAGER
+  VIEWER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+}
+
+model User {
+  id            String      @id @default(cuid())
+  email         String      @unique
+  name          String
+  password      String
+  avatar        String?
+  role          UserRole    @default(RECRUITER)
+  status        UserStatus  @default(ACTIVE)
+  department    String?
+  title         String?
+  phoneNumber   String?
+  lastLoginAt   DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Relations
+  createdJobs   Job[]       @relation("JobCreator")
+  assignedJobs  Job[]       @relation("JobAssignee")
+  applications  Application[] @relation("ApplicationReviewer")
+  interviews    Interview[] @relation("InterviewInterviewer")
+  feedback      Feedback[]  @relation("FeedbackAuthor")
+  roleMappings  UserRoleMapping[]
+  createdNotes  InternalNote[] @relation("NoteCreator")
+
+  @@map("users")
+}
+
+// ============================================
+// Candidate Management
+// ============================================
+
+enum CandidateStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+  BLACKLISTED
+}
+
+enum CandidateSource {
+  LINKEDIN
+  REFERRAL
+  CAREER_PAGE
+  AGENCY
+  HEADHUNT
+  OTHER
+  UPLOAD        // 主动上传
+}
+
+// 学历等级
+enum EducationLevel {
+  HIGH_SCHOOL       // 高中
+  VOCATIONAL        // 大专/高职
+  BACHELOR          // 本科
+  MASTER            // 硕士
+  PHD               // 博士
+  POST_DOCTOR       // 博士后
+  OTHER             // 其他
+}
+
+// 学校类型
+enum SchoolType {
+  TOP_985            // 顶尖985
+  PROJECT_985        // 985工程大学
+  PROJECT_211        // 211工程大学
+  DOUBLE_FIRST       // 双一流
+  PROVINCIAL_KEY     // 省重点
+  ORDINARY_BACHELOR  // 普通本科
+  VOCATIONAL         // 高职高专
+  OVERSEAS           // 海外院校
+  OTHER              // 其他
+}
+
+model Candidate {
+  id                String             @id @default(cuid())
+  email             String             @unique
+  name              String
+  phoneNumber       String?
+  avatar            String?
+  status            CandidateStatus    @default(ACTIVE)
+  source            CandidateSource
+  sourceUrl         String?            // Original profile URL
+
+  // Competitor tracking - JSONB field for flexible storage
+  // Structure: { companies: [{ companyId, companyName, projects[], relationship, confidence }] }
+  competitorMapping Json?
+
+  // Social links
+  linkedinUrl       String?
+  githubUrl         String?
+  portfolioUrl      String?
+  artStationUrl     String?            // 美术作品集
+
+  // ====== 基本信息 ======
+  gender            String?            // male, female, other
+  birthday          DateTime?
+  age               Int?
+
+  // ====== 学历信息（最高学历，快速查询用） ======
+  educationLevel    EducationLevel?
+  major             String?
+  school            String?
+  schoolType        SchoolType?
+  graduationYear    Int?
+  isOverseasEducation Boolean?         @default(false)
+
+  // Additional info
+  location          String?
+  currentCompany    String?
+  currentCompanyId  String?            // 关联 Company 表
+  currentTitle      String?
+  isCurrentlyEmployed Boolean?
+  expectedSalary    String?
+  noticePeriod      String?            // e.g., "2 weeks", "1 month"
+  yearsOfExperience Int?
+
+  // Notes
+  notes             String?
+  tags              String[]           // e.g., ["game-design", "unity", "senior"]
+
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  // Relations
+  resumes           Resume[]
+  applications      Application[]
+  feedback          Feedback[]
+  portal            CandidatePortal?
+  deduplicationLogs DeduplicationLog[]
+  salaryRecords     SalaryRecord[]
+  educations        Education[]
+  workExperiences   WorkExperience[]
+  jobMatches        JobMatch[]
+
+  @@map("candidates")
+  @@index([age])
+  @@index([educationLevel])
+  @@index([schoolType])
+  @@index([isOverseasEducation])
+  @@index([currentCompanyId])
+  @@index([isCurrentlyEmployed])
+}
+
+// ============================================
+// Resume Management
+// ============================================
+
+enum ResumeStatus {
+  PARSING
+  READY
+  ERROR
+}
+
+model Resume {
+  id          String        @id @default(cuid())
+  candidateId String
+  title       String
+  fileName    String
+  fileUrl     String
+  fileSize    Int
+  fileType    String        // e.g., "application/pdf"
+
+  // Parsed data stored as JSONB for flexibility
+  rawData     Json?         // Raw extracted text/data
+  parsedData  Json?         // Structured parsed data
+
+  // 原始数据
+  rawText     String?       @db.Text
+
+  // AI Analysis
+  skills      String[]      // Extracted skills
+  experience  Json?         // Structured experience data
+  education   Json?         // Structured education data
+
+  status      ResumeStatus  @default(PARSING)
+  isPrimary   Boolean       @default(false)
+
+  // 解析元数据
+  parsedAt    DateTime?
+  parserVersion String?
+  errorMessage String?     @db.Text
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  candidate   Candidate     @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  parsings    ResumeParsing[]
+  extractedSkills  ExtractedSkill[]
+  projectExperiences ProjectExperience[]
+
+  @@index([candidateId])
+  @@map("resumes")
+}
+
+// ============================================
+// Job Management
+// ============================================
+
+enum JobStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+  ARCHIVED
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+}
+
+enum WorkMode {
+  ONSITE
+  HYBRID
+  REMOTE
+}
+
+enum ExperienceLevel {
+  ENTRY
+  MID
+  SENIOR
+  LEAD
+  PRINCIPAL
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model Job {
+  id                String          @id @default(cuid())
+  title             String
+  description       String          @db.Text
+  requirements      String          @db.Text
+  responsibilities  String          @db.Text
+
+  // Job metadata
+  status            JobStatus       @default(DRAFT)
+  type              JobType         @default(FULL_TIME)
+  workMode          WorkMode        @default(ONSITE)
+  experienceLevel   ExperienceLevel
+  priority          Priority        @default(MEDIUM)
+
+  // Compensation
+  salaryMin         Int?
+  salaryMax         Int?
+  salaryCurrency    String          @default("USD")
+
+  // Location
+  location          String?
+  remoteRegions     String[]        // For remote jobs
+
+  // Department & Team
+  department        String
+  team              String?
+
+  // Hiring targets
+  targetCompanies   String[]        // Competitor companies to target
+  targetSkills      String[]        // Required/preferred skills
+
+  // ====== 游戏特定要求 ======
+  gameGenres        GameGenre[]     // 期望的游戏类型经验
+  platforms         Platform[]      // 期望的平台经验
+
+  // ====== 基本要求 ======
+  // 年龄要求
+  ageMin            Int?
+  ageMax            Int?
+
+  // 学历要求
+  educationLevel    EducationLevel?
+  preferredMajors   String[]
+
+  // 学校类型偏好
+  preferredSchoolTypes String[]
+  preferOverseas    Boolean?
+  minQsRanking      Int?
+
+  // 工作年限要求
+  minYearsExperience Int?
+
+  // ====== 目标公司要求 ======
+  preferCurrentEmployees Boolean?
+
+  // Applicant tracking
+  applicantCount    Int             @default(0)
+  interviewCount    Int             @default(0)
+  offerCount        Int             @default(0)
+
+  // Dates
+  publishedAt       DateTime?
+  closedAt          DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  // Relations
+  createdBy         String
+  creator           User            @relation("JobCreator", fields: [createdBy], references: [id])
+  assignees         User[]          @relation("JobAssignee")
+  applications      Application[]
+  requiredSkills    JobSkill[]
+  matchWeights      JobMatchWeight?
+  matches           JobMatch[]
+
+  @@index([status])
+  @@index([department])
+  @@index([publishedAt])
+  @@map("jobs")
+}
+
+// ============================================
+// Application Management
+// ============================================
+
+enum ApplicationStatus {
+  APPLIED                      // 已投递
+  HR_INITIAL_CONTACT           // HR 初步沟通
+  BUSINESS_SCREENING           // 业务筛选中
+  BUSINESS_FIRST_INTERVIEW     // 业务初面中
+  BUSINESS_SECOND_INTERVIEW    // 业务复试中
+  HR_FINAL_INTERVIEW           // HR 终面
+  CEO_INTERVIEW                // CEO 面
+  OFFER_PENDING                // Offer 中
+  PENDING_ONBOARDING           // 待入职
+  HIRED                        // 已入职
+  ARCHIVED                     // 已归档
+  BLACKLISTED                  // 黑名单
+}
+
+// Transparency level controls what information is visible to candidates
+enum TransparencyLevel {
+  STANDARD    // Full visibility
+  MINIMAL     // Limited info
+  CUSTOM      // Custom rules
+}
+
+model Application {
+  id                  String             @id @default(cuid())
+  jobId               String
+  candidateId         String
+  status              ApplicationStatus @default(APPLIED)
+
+  // Privacy control - for competitive hiring
+  transparencyLevel   TransparencyLevel  @default(STANDARD)
+  customVisibility    Json?              // Custom visibility rules
+
+  // Application details
+  coverLetter         String?            @db.Text
+  source              String?            // Where they applied from
+  referralSource      String?            // If referred
+
+  // Screening
+  screeningScore      Float?             // AI screening score 0-100
+  screeningNotes      String?            @db.Text
+  screenedAt          DateTime?
+  screenedBy          String?
+
+  // AI Matching
+  matchScore          Float?             // Overall match score 0-100
+  matchDetails        Json?              // Detailed match breakdown
+
+  // Timeline tracking
+  appliedAt           DateTime           @default(now())
+  firstResponseAt     DateTime?
+  lastContactAt       DateTime?
+  closedAt            DateTime?
+
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  // Relations
+  job                 Job                @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  candidate           Candidate          @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  reviewer            User?              @relation("ApplicationReviewer", fields: [screenedBy], references: [id])
+  interviews          Interview[]
+  feedback            Feedback[]
+  logs                ProcessLog[]
+  offer               Offer?
+
+  @@unique([jobId, candidateId])
+  @@index([jobId])
+  @@index([candidateId])
+  @@index([status])
+  @@map("applications")
+}
+
+// ============================================
+// Interview Management
+// ============================================
+
+enum InterviewStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum InterviewType {
+  PHONE_SCREEN
+  VIDEO
+  ONSITE
+  TECHNICAL
+  BEHAVIORAL
+  PANEL
+  TAKE_HOME
+}
+
+enum InterviewStage {
+  SCREENING
+  FIRST_ROUND
+  SECOND_ROUND
+  FINAL_ROUND
+  TECHNICAL
+  CULTURAL
+  EXECUTIVE
+}
+
+model Interview {
+  id              String           @id @default(cuid())
+  applicationId   String
+  interviewerId   String
+  title           String
+  description     String?          @db.Text
+
+  status          InterviewStatus  @default(SCHEDULED)
+  type            InterviewType
+  stage           InterviewStage
+
+  // Scheduling
+  scheduledAt     DateTime
+  duration        Int              // Duration in minutes
+  location        String?          // Meeting link or physical location
+
+  // Evaluation
+  score           Int?             // 1-5 rating
+  notes           String?          @db.Text
+  feedback        Json?            // Structured feedback
+
+  // Follow-up
+  nextSteps       String?          @db.Text
+  followUpAt      DateTime?
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  // Relations
+  application     Application      @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  interviewer     User             @relation("InterviewInterviewer", fields: [interviewerId], references: [id])
+
+  @@index([applicationId])
+  @@index([interviewerId])
+  @@index([scheduledAt])
+  @@map("interviews")
+}
+
+// ============================================
+// Feedback Management
+// ============================================
+
+enum FeedbackType {
+  INTERVIEW
+  APPLICATION
+  CANDIDATE
+  GENERAL
+}
+
+model Feedback {
+  id              String        @id @default(cuid())
+  applicationId   String?
+  candidateId     String?
+  interviewId     String?
+  authorId        String
+
+  type            FeedbackType
+
+  // Privacy control - internal only feedback not shared with candidates
+  internalOnly    Boolean       @default(false)
+
+  // Content
+  rating          Int?          // 1-5 rating
+  pros            String?       @db.Text
+  cons            String?       @db.Text
+  notes           String        @db.Text
+
+  // Tags for filtering
+  tags            String[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  application     Application?  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  candidate       Candidate?    @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  author          User          @relation("FeedbackAuthor", fields: [authorId], references: [id])
+
+  @@index([applicationId])
+  @@index([candidateId])
+  @@index([authorId])
+  @@map("feedback")
+}
+
+// ============================================
+// Workflow Management (Module 3)
+// ============================================
+
+model ProcessTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  isActive    Boolean  @default(true)
+  isDefault   Boolean  @default(false)
+
+  // Job type this template applies to
+  jobTypes    String[] // e.g., ["FULL_TIME", "CONTRACT"]
+
+  nodes       ProcessNode[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("process_templates")
+}
+
+model ProcessNode {
+  id          String   @id @default(cuid())
+  templateId  String?
+  name        String
+  label       String
+  description String?  @db.Text
+
+  // Node configuration
+  stage       ApplicationStatus // Which stage this node represents
+  order       Int              // Order in the workflow
+  isRequired  Boolean  @default(true)
+
+  // Requirements to proceed
+  requiredFields String[] // Fields that must be filled before proceeding
+
+  // Auto-advance configuration
+  autoAdvance Boolean  @default(false)
+  autoAdvanceRule Json? // Rule for auto-advancing
+
+  // Notifications
+  notifyCandidate Boolean  @default(false)
+  notifyInterviewers Boolean @default(false)
+  notificationTemplates Json?
+
+  template    ProcessTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([templateId])
+  @@map("process_nodes")
+}
+
+model ProcessRule {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  isActive    Boolean  @default(true)
+
+  // Rule type
+  ruleType    String // AUTO_ADVANCE, TIMEOUT_REMINDER, TIMEOUT_REJECT
+  triggerCondition Json // When to trigger
+
+  // Actions
+  actions     Json[] // Actions to execute
+
+  // Scope
+  appliesToJobs String[] // Job IDs this rule applies to (empty = all)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("process_rules")
+}
+
+model ProcessLog {
+  id          String   @id @default(cuid())
+  applicationId String
+  nodeId      String?
+
+  // What changed
+  fromStatus  ApplicationStatus
+  toStatus    ApplicationStatus
+
+  // Who made the change
+  changedBy   String
+  changeType  String // MANUAL, AUTO, SYSTEM
+
+  // Additional data
+  metadata    Json?
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+
+  @@index([applicationId])
+  @@map("process_logs")
+}
+
+// ============================================
+// Permissions & Roles (Module 3)
+// ============================================
+
+model Permission {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  resource    String   // e.g., "candidates", "jobs"
+  action      String   // e.g., "read", "write", "delete"
+  conditions  Json?    // Additional conditions
+
+  roles       RolePermission[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  id          String   @id @default(cuid())
+  roleId      String
+  permissionId String
+
+  // Custom conditions for this role
+  conditions  Json?
+
+  role        Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission  Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  isSystem    Boolean  @default(false) // System roles cannot be deleted
+
+  permissions RolePermission[]
+  users       UserRoleMapping[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("roles")
+}
+
+model UserRoleMapping {
+  id          String   @id @default(cuid())
+  userId      String
+  roleId      String
+
+  // Additional constraints
+  constraints Json?    // e.g., department restrictions
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+  @@map("user_role_mappings")
+}
+
+// ============================================
+// Candidate Portal (Module 4)
+// ============================================
+
+model CandidatePortal {
+  id          String   @id @default(cuid())
+  candidateId String   @unique
+  accessToken String   @unique // Token for portal access
+  tokenExpiry DateTime?
+
+  // Portal access tracking
+  lastAccessAt DateTime?
+  accessCount  Int      @default(0)
+
+  // Preferences
+  language    String   @default("zh-CN")
+  timezone    String?
+
+  isActive    Boolean  @default(true)
+
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([accessToken])
+  @@map("candidate_portals")
+}
+
+model InternalNote {
+  id          String   @id @default(cuid())
+  candidateId String?
+  applicationId String?
+
+  // Strictly internal - never visible to candidates
+  title       String
+  content     String   @db.Text
+
+  // Classification
+  category    String   // e.g., "salary_negotiation", "culture_concern", "background_check"
+  sensitivity  String   @default("internal") // internal, confidential, restricted
+
+  // Access control
+  createdBy   String
+  visibleTo   String[] // Role IDs that can see this note
+  creator     User     @relation("NoteCreator", fields: [createdBy], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([candidateId])
+  @@index([applicationId])
+  @@map("internal_notes")
+}
+
+// ============================================
+// Resume Parsing (Module 1)
+// ============================================
+
+model SourceChannel {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  type        String   // MANUAL, PLUGIN, API, SCRAPER
+  config      Json?    // Channel-specific configuration
+
+  isActive    Boolean  @default(true)
+  priority    Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("source_channels")
+}
+
+model ResumeParsing {
+  id          String   @id @default(cuid())
+  resumeId    String
+
+  // Parsing status
+  status      String   // PENDING, PROCESSING, COMPLETED, FAILED
+  progress    Int      @default(0)
+
+  // Parsing results
+  extractedData Json?
+  confidence    Float?
+  warnings      String[]
+  errors        String[]
+
+  // Processing metadata
+  parserVersion String?
+  processingTime Int? // milliseconds
+  queuedAt     DateTime @default(now())
+  startedAt    DateTime?
+  completedAt  DateTime?
+
+  resume      Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId])
+  @@index([status])
+  @@map("resume_parsings")
+}
+
+model SkillTag {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  category    String   // e.g., "game_engine", "programming_language", "art_style"
+  subcategory String?  // e.g., "ue5", "unity", "ta"
+
+  // Game industry specific
+  isGamingSpecific Boolean @default(false)
+  popularity   Int      @default(0) // How often this tag appears
+
+  // Related skills
+  relatedTags String[]
+
+  isActive    Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@map("skill_tags")
+}
+
+model DeduplicationLog {
+  id          String   @id @default(cuid())
+  candidateId String
+
+  // Match information
+  matchedCandidateId String?
+  matchScore    Float
+  matchReason   String[] // Why these were considered duplicates
+
+  // Action taken
+  action       String // MERGED, SKIPPED, FLAGGED
+  performedBy  String?
+
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+
+  @@index([candidateId])
+  @@map("deduplication_logs")
+}
+
+// ============================================
+// Offer & Salary (Module 5 - Simplified)
+// ============================================
+
+model Offer {
+  id          String   @id @default(cuid())
+  applicationId String   @unique
+
+  // Salary details
+  baseSalary    Int?
+  bonus         Int?
+  equity        Json?    // Equity package details
+  totalComp     Int?
+
+  currency     String   @default("CNY")
+
+  // Offer status
+  status       String   // DRAFT, SENT, ACCEPTED, REJECTED, EXPIRED
+  sentAt       DateTime?
+  acceptedAt   DateTime?
+  expiresAt    DateTime?
+
+  // Negotiation
+  expectedSalary Int?
+  counterOffer  Json?
+
+  createdBy    String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  application  Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+  @@index([status])
+  @@map("offers")
+}
+
+model SalaryRecord {
+  id          String   @id @default(cuid())
+  candidateId String
+
+  // Salary breakdown
+  baseSalary    Int
+  bonus         Int?
+  equity        Int?
+  totalComp     Int
+
+  currency     String   @default("CNY")
+
+  // Context
+  jobTitle     String
+  level        String   // e.g., "Senior", "Lead"
+  department   String
+  location     String
+
+  // Source
+  offerId      String?  // If from actual offer
+  source       String   // ACTUAL_OFFER, EXPECTED, MARKET_DATA
+
+  // Metadata
+  effectiveDate DateTime
+  notes        String?
+
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime @default(now())
+
+  @@index([candidateId])
+  @@index([jobTitle])
+  @@map("salary_records")
+}
+
+// ============================================
+// Resume Parsing & AI Matching - Enhanced Models
+// ============================================
+
+// 公司类型
+enum CompanyType {
+  GAME_DEVELOPER    // 游戏开发公司
+  GAME_PUBLISHER    // 游戏发行公司
+  GAME_PLATFORM     // 游戏平台公司
+  TECH_COMPANY      // 科技公司
+  STUDIO            // 工作室
+  OUTSOURCE         // 外包公司
+  OTHER             // 其他
+}
+
+enum CompanyScale {
+  STARTUP        // 创业公司（<50人）
+  SMALL          // 小型（50-200人）
+  MEDIUM         // 中型（200-1000人）
+  LARGE          // 大型（1000-5000人）
+  GIANT          // 巨型（5000+人）
+}
+
+// 技能分类
+enum SkillCategory {
+  GAME_ENGINE              // Unity, Unreal, Godot
+  PROGRAMMING_LANGUAGE     // C++, C#, Lua, Python
+  GRAPHICS_API             // DirectX, OpenGL, Vulkan
+  ART_TOOL                 // Maya, Blender, Photoshop
+  ART_STYLE                // realism, stylized
+  GAME_DESIGN              // level-design, combat-system
+  OTHER                    // 其他
+}
+
+enum SkillProficiency {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+// 项目类型
+enum ProjectType {
+  GAME
+  TECH_DEMO
+  MOD
+  PORTFOLIO
+  OTHER
+}
+
+enum GameGenre {
+  ACTION
+  RPG
+  STRATEGY
+  SIMULATION
+  SPORTS
+  RACING
+  PUZZLE
+  ADVENTURE
+  HORROR
+  MOBA
+  MMORPG
+  BATTLE_ROYALE
+  OTHER
+}
+
+enum Platform {
+  PC
+  MOBILE
+  CONSOLE
+  VR
+  AR
+  WEB
+  CROSS_PLATFORM
+}
+
+enum ProjectRole {
+  PROGRAMMER
+  ARTIST
+  DESIGNER
+  PRODUCER
+  LEAD
+  TECH_LEAD
+  ART_DIRECTOR
+  CREATIVE_DIRECTOR
+  OTHER
+}
+
+// 匹配状态
+enum MatchStatus {
+  PENDING      // 待处理
+  REVIEWING    // 审核中
+  CONTACTED    // 已联系
+  SHORTLISTED  // 已入围
+  REJECTED     // 已拒绝
+  HIRED        // 已录用
+}
+
+// 技能重要性
+enum SkillImportance {
+  MUST_HAVE      // 必备技能
+  NICE_TO_HAVE   // 加分项
+  BONUS          // 额外加分
+}
+
+// ============================================
+// Education - 教育经历
+// ============================================
+
+model Education {
+  id            String      @id @default(cuid())
+  candidateId   String
+
+  // 学校基本信息
+  school        String      // 学校名称
+  schoolType    SchoolType  // 学校类型
+  country       String?     // 国家（海外学历）
+  province      String?     // 省份（国内学历）
+  city          String?     // 城市
+
+  // 学位/专业信息
+  major         String      // 专业
+  degree        String?     // 学位名称
+  level         EducationLevel
+
+  // ====== 海外学历特定字段 ======
+  isOverseas    Boolean     @default(false)
+  qsRanking     Int?        // QS世界大学排名
+  theRanking    Int?        // THE排名
+  arwuRanking   Int?        // ARWU软科排名
+
+  // ====== 中国学历特定字段 ======
+  isDoubleFirst Boolean     @default(false)
+  is985         Boolean     @default(false)
+  is211         Boolean     @default(false)
+
+  // ====== 时间信息 ======
+  startDate     DateTime?
+  endDate       DateTime?
+  graduationYear Int?
+
+  // ====== 成绩/GPA ======
+  gpa           Float?
+  gpaScale      Float?      // GPA满分
+  gpaType       String?     // GPA类型（4.0制, 5.0制, 百分制）
+
+  // ====== 荣誉/奖项 ======
+  honors        String[]    // 获得的荣誉
+  scholarships  String[]    // 奖学金
+
+  // ====== 课程/研究方向 ======
+  courses       String[]    // 相关课程
+  research      String?     @db.Text
+  dissertation  String?     @db.Text
+
+  // ====== 学历认证 ======
+  isVerified    Boolean     @default(false)
+  verifiedAt    DateTime?
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  candidate     Candidate   @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@index([candidateId])
+  @@index([schoolType])
+  @@index([level])
+  @@index([isOverseas])
+  @@index([qsRanking])
+  @@map("educations")
+}
+
+// ============================================
+// School - 学校信息库
+// ============================================
+
+model School {
+  id            String      @id @default(cuid())
+  name          String      @unique
+  nameEn        String?
+
+  schoolType    SchoolType
+  country       String
+  province      String?
+  city          String?
+
+  qsRanking     Int?
+  theRanking    Int?
+  arwuRanking   Int?
+  usNewsRanking Int?
+
+  is985         Boolean     @default(false)
+  is211         Boolean     @default(false)
+  isDoubleFirst Boolean     @default(false)
+
+  website       String?
+  isActive      Boolean     @default(true)
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([schoolType])
+  @@index([country])
+  @@index([qsRanking])
+  @@map("schools")
+}
+
+// ============================================
+// WorkExperience - 工作经历
+// ============================================
+
+model WorkExperience {
+  id            String      @id @default(cuid())
+  candidateId   String
+
+  companyId     String?
+  companyName   String
+
+  title         String
+  level         String?
+  department    String?
+
+  startDate     DateTime
+  endDate       DateTime?
+  isCurrent     Boolean     @default(false)
+
+  location      String?
+  description   String?     @db.Text
+  achievements  String[]
+
+  teamSize      Int?
+  directReports Int?
+  leaveReason   String?
+  isTargetCompany Boolean?
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  candidate     Candidate   @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@index([candidateId])
+  @@index([companyId])
+  @@index([isCurrent])
+  @@index([startDate])
+  @@map("work_experiences")
+}
+
+// ============================================
+// Company - 公司信息库
+// ============================================
+
+model Company {
+  id            String      @id @default(cuid())
+
+  name          String      @unique
+  nameEn        String?
+  aliases       String[]
+  shortName     String?
+
+  type          CompanyType
+  scale         CompanyScale?
+
+  country       String
+  province      String?
+  city          String?
+
+  isCompetitor  Boolean     @default(false)
+  competitorLevel String?
+  games         String[]
+
+  website       String?
+  linkedinUrl   String?
+  tags          String[]
+
+  isActive      Boolean     @default(true)
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([type])
+  @@index([isCompetitor])
+  @@index([country])
+  @@map("companies")
+}
+
+// ============================================
+// ExtractedSkill - 提取的技能
+// ============================================
+
+model ExtractedSkill {
+  id          String          @id @default(cuid())
+  resumeId    String
+
+  name        String
+  category    SkillCategory
+
+  proficiency SkillProficiency @default(INTERMEDIATE)
+  confidence  Float?
+
+  context     String?         @db.Text
+  yearsOfExperience Float?
+
+  createdAt   DateTime        @default(now())
+
+  resume      Resume          @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId])
+  @@index([category])
+  @@map("extracted_skills")
+}
+
+// ============================================
+// ProjectExperience - 项目经验
+// ============================================
+
+model ProjectExperience {
+  id              String       @id @default(cuid())
+  resumeId        String
+
+  projectName     String
+  projectType     ProjectType
+  description     String?      @db.Text
+
+  gameGenre       GameGenre?
+  platform        Platform[]
+
+  role            ProjectRole
+  isLead          Boolean      @default(false)
+
+  achievements    String?      @db.Text
+  downloadUrl     String?
+  videoUrl        String?
+
+  startDate       DateTime?
+  endDate         DateTime?
+
+  createdAt       DateTime     @default(now())
+
+  resume          Resume       @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId])
+  @@index([gameGenre])
+  @@map("project_experiences")
+}
+
+// ============================================
+// JobSkill - 职位技能要求
+// ============================================
+
+model JobSkill {
+  id          String         @id @default(cuid())
+  jobId       String
+
+  name        String
+  category    SkillCategory
+
+  importance  SkillImportance @default(MUST_HAVE)
+  minProficiency SkillProficiency?
+  minYears    Float?
+
+  createdAt   DateTime       @default(now())
+
+  job         Job            @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+  @@map("job_skills")
+}
+
+// ============================================
+// JobMatchWeight - 匹配权重配置
+// ============================================
+
+model JobMatchWeight {
+  id          String   @id @default(cuid())
+  jobId       String   @unique
+
+  // 主权重
+  skillWeight              Float  @default(0.40)
+  projectWeight            Float  @default(0.25)
+  educationWeight          Float  @default(0.15)
+  experienceWeight         Float  @default(0.10)
+  ageWeight                Float  @default(0.05)
+  companyBackgroundWeight  Float  @default(0.05)
+  otherWeight              Float  @default(0.00)
+
+  // 学历内部权重
+  educationLevelWeight  Float  @default(0.50)
+  schoolTypeWeight       Float  @default(0.30)
+  majorMatchWeight       Float  @default(0.15)
+  qsRankingWeight        Float  @default(0.05)
+
+  // 公司背景内部权重
+  targetCompanyCurrentWeight  Float @default(0.50)
+  targetCompanyPastWeight     Float @default(0.30)
+  competitorCompanyWeight     Float @default(0.20)
+
+  // 自定义评分规则
+  educationLevelScores  Json?
+  schoolTypeScores      Json?
+  qsRankingScores       Json?
+  targetCompanyScores   Json?
+
+  isActive    Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@map("job_match_weights")
+}
+
+// ============================================
+// JobMatch - AI 匹配结果
+// ============================================
+
+model JobMatch {
+  id              String      @id @default(cuid())
+  jobId           String
+  candidateId     String
+  resumeId        String
+
+  status          MatchStatus @default(PENDING)
+
+  // 总分
+  overallScore    Float?
+
+  // 各维度分数
+  skillScore      Float?
+  projectScore    Float?
+  educationScore  Float?
+  experienceScore Float?
+  ageScore        Float?
+  companyBackgroundScore Float?
+
+  // 详细信息
+  skillDetails      Json?
+  projectDetails    Json?
+  educationDetails  Json?
+  experienceDetails Json?
+  ageDetails        Json?
+  companyBackgroundDetails Json?
+  scoreBreakdown    Json?
+
+  // 匹配分析
+  highlights      String[]
+  missingSkills   String[]
+  missingCriteria String[]
+  matchReason     String?     @db.Text
+  mismatchReason  String?     @db.Text
+
+  // HR 备注
+  notes           String?     @db.Text
+
+  // 联系记录
+  contactedAt     DateTime?
+  responseReceived  Boolean?
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  job             Job         @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  candidate       Candidate   @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, candidateId])
+  @@index([jobId])
+  @@index([candidateId])
+  @@index([overallScore])
+  @@map("job_matches")
+}

@@ -1,0 +1,61 @@
+// ============================================
+// Shared Enums Module
+// ============================================
+
+enum EducationLevel {
+  HIGH_SCHOOL
+  VOCATIONAL
+  BACHELOR
+  MASTER
+  PHD
+  POST_DOCTOR
+  OTHER
+}
+
+enum SchoolType {
+  DOMESTIC_PUBLIC
+  DOMESTIC_PRIVATE
+  OVERSEAS
+  TOP_985
+  PROJECT_985
+  PROJECT_211
+  DOUBLE_FIRST
+  PROVINCIAL_KEY
+  ORDINARY_BACHELOR
+  VOCATIONAL
+  OTHER
+}
+
+enum CompanyType {
+  GAME_STUDIO
+  GAME_DEVELOPER
+  GAME_PUBLISHER
+  GAME_PLATFORM
+  TECH_COMPANY
+  STUDIO
+  PLATFORM
+  PUBLISHER
+  AGENCY
+  OUTSOURCE
+  OTHER
+}
+
+enum CompanyScale {
+  STARTUP      // 1-10人
+  SMALL        // 11-50人
+  MEDIUM       // 51-200人
+  LARGE        // 201-1000人
+  GIANT        // 1000+人
+}
+
+enum ProjectRole {
+  PROGRAMMER
+  TECH_LEAD
+  LEAD
+  ARTIST
+  ART_DIRECTOR
+  CREATIVE_DIRECTOR
+  DESIGNER
+  PRODUCER
+  OTHER
+}

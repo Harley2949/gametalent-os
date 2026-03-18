@@ -1,0 +1,41 @@
+// ============================================
+// Work Experience Module
+// ============================================
+
+model WorkExperience {
+  id              String        @id @default(cuid())
+  candidateId     String
+
+  // 公司信息
+  companyId       String?
+  companyName     String        // 冗余存储，即使没有关联公司也能显示
+  title           String
+  level           String?       // 职级，如"高级"、"资深"
+  department      String?       // 部门
+  location        String?       // 工作地点
+
+  // 时间
+  startDate       DateTime
+  endDate         DateTime?
+  isCurrent       Boolean       @default(false)
+
+  // 目标公司标记（竞争对手公司）
+  isTargetCompany Boolean       @default(false)
+
+  // 详情
+  description     String?       @db.Text
+  achievements    String?       @db.Text
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  candidate       Candidate     @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  company         Company?      @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  @@index([candidateId])
+  @@index([companyId])
+  @@index([companyName])
+  @@index([isCurrent])
+  @@map("work_experiences")
+}

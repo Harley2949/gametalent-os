@@ -21,10 +21,16 @@ model Resume {
   rawData     Json?         // Raw extracted text/data
   parsedData  Json?         // Structured parsed data
 
+  // 新增字段（兼容性）
+  rawText         String?       @db.Text  // 兼容性字段，实际上是 rawData
+  errorMessage    String?       @db.Text  // 解析错误信息
+  parsedAt        DateTime?               // 解析完成时间
+  parserVersion   String?                 // 解析器版本
+
   // AI Analysis
-  skills      String[]      // Extracted skills
-  experience  Json?         // Structured experience data
-  education   Json?         // Structured education data
+  skills          String[]      // Extracted skills
+  experience      Json?         // Structured experience data
+  education       Json?         // Structured education data
 
   status      ResumeStatus  @default(PARSING)
   isPrimary   Boolean       @default(false)
@@ -35,6 +41,8 @@ model Resume {
   // Relations
   candidate   Candidate     @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   parsings    ResumeParsing[]
+  extractedSkills ExtractedSkill[]
+  projectExperiences ProjectExperience[]
 
   @@index([candidateId])
   @@map("resumes")

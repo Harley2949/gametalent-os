@@ -1,0 +1,39 @@
+Note: Unnecessary use of -X or --request, POST is already inferred.
+* Uses proxy env variable no_proxy == 'localhost,127.0.0.1'
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0*   Trying [::1]:3006...
+* Connected to localhost (::1) port 3006
+> POST /api/resume-upload/upload HTTP/1.1
+> Host: localhost:3006
+> User-Agent: curl/8.4.0
+> Accept: */*
+> Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbW1qZXd3Z20wMDAwMTRpcWx2djFuMjBqIiwiZW1haWwiOiJ0ZXN0QHRlc3QuY29tIiwicm9sZSI6IlJFQ1JVSVRFUiIsImlhdCI6MTc3MzA3NDcyOCwiZXhwIjoxNzczNjc5NTI4fQ.0DNO_kYT6BWEjJ6x3Euvdw6v_92BET37NATHOxEQgsY
+> Content-Length: 818
+> Content-Type: multipart/form-data; boundary=------------------------HNJX5lcXKMsRNMYGncGE5p
+> 
+} [818 bytes data]
+* We are completely uploaded and fine
+< HTTP/1.1 400 Bad Request
+< X-Powered-By: Express
+< Access-Control-Allow-Origin: http://localhost:3000
+< Vary: Origin
+< Access-Control-Allow-Credentials: true
+< Content-Type: application/json; charset=utf-8
+< Content-Length: 101
+< ETag: W/"65-XPOh9h0Zsj+yStC4eB7j5vTe3Yk"
+< Date: Mon, 09 Mar 2026 16:46:57 GMT
+< Connection: keep-alive
+< Keep-Alive: timeout=5
+< 
+{ [101 bytes data]
+100   919  100   101  100   818   1543  12502 --:--:-- --:--:-- --:--:-- 14138{"message":"文件解析失败，请确保文件格式正确","error":"Bad Request","statusCode":400}
+* Connection #0 to host localhost left intact
+Note: Unnecessary use of -X or --request, POST is already inferred.
+* URL rejected: Malformed input to a URL function
+* Closing connection
+curl: (3) URL rejected: Malformed input to a URL function
+Note: Unnecessary use of -X or --request, POST is already inferred.
+* URL rejected: Malformed input to a URL function
+* Closing connection
+curl: (3) URL rejected: Malformed input to a URL function

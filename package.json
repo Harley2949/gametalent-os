@@ -1,0 +1,58 @@
+{
+  "name": "gametalent-os",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI-Native Recruitment System for Gaming Industry",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
+    "type-check": "turbo run type-check",
+    "test": "turbo run test",
+    "test:all": "scripts/test-all.bat",
+    "test:coverage": "scripts/test-all.bat --coverage",
+    "test:e2e": "npx playwright test",
+    "test:e2e:ui": "npx playwright test --ui",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "db:generate": "cd packages/db && pnpm run generate",
+    "db:push": "cd packages/db && pnpm run push",
+    "db:migrate": "cd packages/db && pnpm run migrate",
+    "db:studio": "cd packages/db && pnpm run studio",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@types/d3": "^7.4.3",
+    "@types/node": "^20.11.5",
+    "d3": "^7.9.0",
+    "eslint": "^8.56.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.1.1",
+    "recharts": "^2.15.4",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.7.0",
+    "turbo": "^2.8.13",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0",
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,css,scss,md}": [
+      "prettier --write"
+    ]
+  }
+}

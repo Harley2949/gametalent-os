@@ -60,6 +60,8 @@ model Interview {
   // Relations
   application     Application      @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   interviewer     User             @relation("InterviewInterviewer", fields: [interviewerId], references: [id])
+  invitation      InterviewInvitation?
+  reminders       InterviewReminder[]
 
   @@index([applicationId])
   @@index([interviewerId])

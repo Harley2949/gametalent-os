@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试Select组件</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        .info {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>测试候选人数据加载</h1>
+
+    <div class="info" id="status">正在加载数据...</div>
+
+    <div>
+        <label>候选人：</label>
+        <select id="candidates-select">
+            <option value="">加载中...</option>
+        </select>
+    </div>
+
+    <div>
+        <label>职位：</label>
+        <select id="jobs-select">
+            <option value="">加载中...</option>
+        </select>
+    </div>
+
+    <script>
+        // 测试候选人API
+        fetch('http://localhost:3006/api/candidates?skip=0&take=10')
+            .then(res => res.json())
+            .then(data => {
+                console.log('候选人数据:', data);
+                const select = document.getElementById('candidates-select');
+                select.innerHTML = '<option value="">请选择候选人</option>';
+
+                if (data.data && data.data.length > 0) {
+                    data.data.forEach(candidate => {
+                        const option = document.createElement('option');
+                        option.value = candidate.id;
+                        option.textContent = `${candidate.name} - ${candidate.currentCompany || '无公司'} (${candidate.email})`;
+                        select.appendChild(option);
+                    });
+                    document.getElementById('status').innerHTML = `✅ 候选人加载成功：${data.data.length}个`;
+                } else {
+                    document.getElementById('status').innerHTML = '⚠️ 候选人列表为空';
+                }
+            })
+            .catch(error => {
+                console.error('候选人API错误:', error);
+                document.getElementById('status').innerHTML = `❌ 候选人API错误: ${error.message}`;
+            });
+
+        // 测试职位API
+        fetch('http://localhost:3006/api/jobs?skip=0&take=10')
+            .then(res => {
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return res.json();
+            })
+            .then(data => {
+                console.log('职位数据:', data);
+                const select = document.getElementById('jobs-select');
+                select.innerHTML = '<option value="">请选择职位</option>';
+
+                if (data.data && data.data.length > 0) {
+                    data.data.forEach(job => {
+                        const option = document.createElement('option');
+                        option.value = job.id;
+                        option.textContent = `${job.title} - ${job.department || '无部门'}`;
+                        select.appendChild(option);
+                    });
+                    document.getElementById('status').innerHTML += '<br>✅ 职位加载成功：' + data.data.length + '个';
+                } else if (data.error) {
+                    document.getElementById('status').innerHTML += '<br>❌ 职位API错误: ' + data.message;
+                } else {
+                    document.getElementById('status').innerHTML += '<br>⚠️ 职位列表为空';
+                }
+            })
+            .catch(error => {
+                console.error('职位API错误:', error);
+                document.getElementById('status').innerHTML += '<br>❌ 职位API错误: ' + error.message;
+            });
+    </script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+// ============================================
+// Project Experience Module
+// ============================================
+
+model ProjectExperience {
+  id              String        @id @default(cuid())
+  resumeId        String
+
+  projectName     String
+  projectType     String        // GAME, WEB, MOBILE, OTHER
+  description     String?       @db.Text
+
+  // 角色信息
+  role            ProjectRole?
+  customRole      String?       // 自定义角色
+
+  // 技术栈
+  techStack       String[]
+
+  // 成果
+  achievements    String?       @db.Text
+
+  // 项目规模
+  teamSize        Int?
+  duration        String?       // 如 "3个月", "1年"
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  resume          Resume        @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId])
+  @@index([projectName])
+  @@map("project_experiences")
+}
