@@ -168,6 +168,11 @@ model Candidate {
   @@index([isOverseasEducation])
   @@index([currentCompanyId])
   @@index([isCurrentlyEmployed])
+  @@index([status]) // 状态索引：快速筛选活跃/非活跃候选人
+  @@index([status, createdAt]) // 复合索引：按状态和创建时间查询
+  @@index([currentCompany]) // 公司索引：查找特定公司的候选人
+  @@index([location]) // 地区索引：按地区筛选
+  @@index([createdAt]) // 时间索引：按创建时间排序
 }
 
 // ============================================
@@ -415,6 +420,10 @@ model Application {
   @@index([jobId])
   @@index([candidateId])
   @@index([status])
+  @@index([status, appliedAt]) // 复合索引：按状态和时间查询
+  @@index([candidateId, status]) // 复合索引：查询候选人的特定状态应聘
+  @@index([jobId, status]) // 复合索引：查询职位的不同状态应聘
+  @@index([appliedAt]) // 时间索引：用于按时间排序
   @@map("applications")
 }
 

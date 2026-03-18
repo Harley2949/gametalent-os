@@ -32,7 +32,7 @@ import {
 import { Plus, Search, Filter, X, Trash2, Eye, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 
 
 // Shared Components
@@ -125,39 +125,39 @@ export default function CandidatesPage() {
     }
   };
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     await loadCandidates(true);
     // 刷新路由缓存，确保服务器端数据也是最新的
     router.refresh();
-  };
+  }, [router]); // 依赖：router
 
-  const handleSearch = (value: string) => {
+  const handleSearch = useCallback((value: string) => {
     setSearch(value);
     setPage(1);
-  };
+  }, []); // 无依赖，函数本身不变
 
-  const handleStatusFilter = (value: string) => {
+  const handleStatusFilter = useCallback((value: string) => {
     setStatusFilter(value);
     setPage(1);
-  };
+  }, []); // 无依赖，函数本身不变
 
-  const handleTagFilter = (value: string) => {
+  const handleTagFilter = useCallback((value: string) => {
     setTagFilter(value);
     setPage(1);
-  };
+  }, []); // 无依赖，函数本身不变
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setStatusFilter('');
     setTagFilter('');
     setPage(1);
-  };
+  }, []); // 无依赖，函数本身不变
 
-  const handleDeleteClick = (candidate: Candidate) => {
+  const handleDeleteClick = useCallback((candidate: Candidate) => {
     setCandidateToDelete(candidate);
     setDeleteDialogOpen(true);
-  };
+  }, []); // 无依赖，函数本身不变
 
-  const handleDeleteConfirm = async () => {
+  const handleDeleteConfirm = useCallback(async () => {
     if (!candidateToDelete) return;
     try {
       setDeleting(true);
@@ -181,16 +181,18 @@ export default function CandidatesPage() {
     }
   };
 
-  const hasActiveFilters = statusFilter || tagFilter;
+  const hasActiveFilters = useMemo(() => {
+    return Boolean(statusFilter || tagFilter);
+  }, [statusFilter, tagFilter]); // 依赖：statusFilter, tagFilter
 
-  const getInitials = (name: string) => {
+  const getInitials = useCallback((name: string) => {
     return name
       .split(' ')
       .map((n) => n[0])
       .join('')
       .toUpperCase()
       .slice(0, 2);
-  };
+  }, []); // 无依赖，函数本身不变
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -250,7 +252,7 @@ export default function CandidatesPage() {
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="所有状态" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper">
                 <SelectItem value="ACTIVE">活跃</SelectItem>
                 <SelectItem value="INACTIVE">非活跃</SelectItem>
                 <SelectItem value="HIRED">已录用</SelectItem>
@@ -264,7 +266,7 @@ export default function CandidatesPage() {
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="所有标签" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper">
                   {allTags.map((tag) => (
                     <SelectItem key={tag} value={tag}>
                       {tag}
