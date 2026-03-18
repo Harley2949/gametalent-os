@@ -217,7 +217,7 @@ export async function fetchCandidate(id: string) {
   }
 }
 
-export async function createCandidate(data: any) {
+export async function createCandidate(data: CreateCandidateDto) {
   try {
     console.log('🔗 [创建候选人] 正在调用后端API:', data);
     const response = await fetch(`${API_BASE_URL}/api/candidates`, {
@@ -257,7 +257,7 @@ export async function createCandidate(data: any) {
   }
 }
 
-export async function updateCandidate(id: string, data: any) {
+export async function updateCandidate(id: string, data: Partial<Candidate>) {
   try {
     const response = await fetch(`${API_BASE_URL}/api/candidates/${id}`, {
       method: 'PUT',
@@ -630,7 +630,7 @@ export async function createJob(data: any) {
 /**
  * 更新职位
  */
-export async function updateJob(id: string, data: any) {
+export async function updateJob(id: string, data: Partial<Job>) {
   const response = await fetch(`${API_BASE_URL}/api/jobs/${id}`, {
     method: 'PUT',
     headers: {
@@ -1593,7 +1593,7 @@ export async function createApplication(data: any) {
 /**
  * 更新应聘信息
  */
-export async function updateApplication(id: string, data: any) {
+export async function updateApplication(id: string, data: Partial<Application>) {
   const response = await fetch(`${API_BASE_URL}/api/applications/${id}`, {
     method: 'PUT',
     headers: {
