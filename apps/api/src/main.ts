@@ -9,6 +9,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import * as express from 'express';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -17,6 +18,9 @@ async function bootstrap() {
     const app = await NestFactory.create(AppModule, {
       logger: ['error', 'warn', 'log', 'debug', 'verbose'],
     });
+
+    // 🔒 安全改进：添加 cookie-parser 中间件
+    app.use(cookieParser());
 
     // 设置 UTF-8 编码支持，防止中文乱码
     app.use((req, res, next) => {
@@ -27,15 +31,20 @@ async function bootstrap() {
     // 应用全局异常过滤器
     app.useGlobalFilters(new AllExceptionsFilter());
 
-    // Enable CORS
+    // Enable CORS - 支持本地开发的不同 host 格式
     app.enableCors({
       origin: [
         'http://localhost:3000',
+        'http://127.0.0.1:3000', // ✅ 添加 127.0.0.1 支持
         'http://localhost:3001',
+        'http://127.0.0.1:3001', // ✅ 添加 127.0.0.1 支持
         'http://localhost:3002',
+        'http://127.0.0.1:3002', // ✅ 添加 127.0.0.1 支持
         process.env.FRONTEND_URL
       ].filter(Boolean),
       credentials: true,
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+      allowedHeaders: 'Content-Type, Accept, Authorization',
     });
 
     // Global validation pipe

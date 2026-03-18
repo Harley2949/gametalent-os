@@ -1,19 +1,16 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006';
 
 // 获取认证头
+// ⚠️ 安全改进：不再从 localStorage 读取 token
+// 后端使用 httpOnly Cookie 进行认证，无需前端手动传递 token
 export function getAuthHeaders(): Record<string, string> {
-  if (typeof window === 'undefined') return {};
+  // Cookie 会由浏览器自动发送，无需手动添加 Authorization header
+  // 如果需要在 SSR 中传递认证信息，可从 cookies 中读取
+  return {};
 
-  const token = localStorage.getItem('auth_token');
-
-  if (!token) {
-    console.warn('⚠️ 未找到认证令牌，请先登录');
-    return {};
-  }
-
-  return {
-    'Authorization': `Bearer ${token}`,
-  };
+  // ❌ 旧代码（不安全）：
+  // const token = localStorage.getItem('auth_token');
+  // return { 'Authorization': `Bearer ${token}` };
 }
 
 // Mock数据用于开发测试
