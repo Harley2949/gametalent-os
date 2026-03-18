@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { FileText, Download, ZoomIn, ZoomOut, Maximize2, Printer } from 'lucide-react';
 import { Button } from '@gametalent/ui';
+import { FileText, Download, ZoomIn, ZoomOut, Maximize2, Printer } from 'lucide-react';
+import { useState, useRef } from 'react';
 
 interface Resume {
   id: string;

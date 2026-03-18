@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import {
   Card,
   CardContent,
@@ -19,6 +18,7 @@ import {
 import { Badge } from '@gametalent/ui';
 import { Switch } from '@gametalent/ui';
 import { Label } from '@gametalent/ui';
+import { useState } from 'react';
 
 type TransparencyMode = 'standard' | 'minimal' | 'custom';
 

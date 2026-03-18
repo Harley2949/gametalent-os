@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@gametalent/ui';
 import { Button } from '@gametalent/ui';
 import { Badge } from '@gametalent/ui';
 import { Avatar } from '@gametalent/ui';
+import { useState, useEffect } from 'react';
 
 interface TimeSlot {
   id: string;

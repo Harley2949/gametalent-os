@@ -1,14 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { Button } from '@gametalent/ui';
 import { Badge } from '@gametalent/ui';
 import { Avatar, AvatarFallback, AvatarImage } from '@gametalent/ui';
 import { Card } from '@gametalent/ui';
 import { CardContent } from '@gametalent/ui';
 import { ArrowLeft, Mail, Phone, MapPin, Briefcase, Clock, Edit2, Trash2 } from 'lucide-react';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+
 import { RightActionPanel } from '@/components/candidates/right-action-panel';
 import { StageHistoryTimeline } from '@/components/candidates/stage-history-timeline';
 import type { Candidate } from '@/types/candidate';

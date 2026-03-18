@@ -1,12 +1,15 @@
 'use client';
 
-import { useState, useCallback } from 'react';
 import { Button } from '@gametalent/ui';
-import { Search, Filter, LayoutGrid, List } from 'lucide-react';
 import { Badge } from '@gametalent/ui';
-import { ApplicationStatusLabels } from '@/types/application';
+import { Search, Filter, LayoutGrid, List } from 'lucide-react';
+import { useState, useCallback } from 'react';
+
+
 import { ModuleErrorBoundary } from './ModuleErrorBoundary';
+
 import { isFeatureEnabled } from '@/lib/featureFlags';
+import { ApplicationStatusLabels } from '@/types/application';
 
 interface ApplicationFiltersProps {
   search: string;

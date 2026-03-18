@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
+import { CandidateForm } from '@/components/candidate-form';
 import { useToast } from '@/components/shared/Toast';
 import { BackHeader } from '@/components/ui/BackHeader';
-import { CandidateForm } from '@/components/candidate-form';
 import { fetchCandidate, updateCandidate } from '@/lib/api';
 import type { Candidate } from '@/types/candidate';
 

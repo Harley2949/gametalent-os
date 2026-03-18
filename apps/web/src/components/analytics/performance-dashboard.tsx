@@ -5,9 +5,9 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@gametalent/ui';
 import { cn } from '@gametalent/ui';
+import { useState, useEffect } from 'react';
 
 interface PerformanceMetrics {
   fcp: number;

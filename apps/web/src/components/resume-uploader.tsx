@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@gametalent/ui';
 import { Button } from '@gametalent/ui';
 import { Upload, FileText, X, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState, useCallback } from 'react';
+
 import { useToast } from './shared/Toast';
 
 interface UploadFile {

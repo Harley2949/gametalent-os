@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@gametalent/ui';
-import { FileText, Download } from 'lucide-react';
 import { Button } from '@gametalent/ui';
+import { FileText, Download } from 'lucide-react';
 
 interface ResumeCardProps {
   resumes?: any[];

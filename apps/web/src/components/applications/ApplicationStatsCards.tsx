@@ -1,8 +1,9 @@
 'use client';
 
-import { ApplicationStats } from '@/types/application';
-import { StatCard } from './StatCard';
 import { ModuleErrorBoundary } from './ModuleErrorBoundary';
+import { StatCard } from './StatCard';
+
+import { ApplicationStats } from '@/types/application';
 
 interface ApplicationStatsCardsProps {
   stats: ApplicationStats;

@@ -5,9 +5,9 @@
 
 'use client';
 
-import Image from 'next/image';
-import { useState, useRef, useCallback } from 'react';
 import { cn } from '@gametalent/ui';
+import Image from 'next/image';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 interface OptimizedImageProps {
   src: string;
@@ -21,6 +21,7 @@ interface OptimizedImageProps {
   quality?: number;
   placeholder?: 'blur' | 'empty';
   blurDataURL?: string;
+  onError?: () => void;
 }
 
 /**
@@ -38,6 +39,7 @@ export function OptimizedImage({
   quality = 75,
   placeholder = 'empty',
   blurDataURL,
+  onError,
 }: OptimizedImageProps) {
   const [isLoading, setIsLoading] = useState(!priority);
   const [isError, setIsError] = useState(false);
@@ -50,7 +52,8 @@ export function OptimizedImage({
   const handleError = useCallback(() => {
     setIsLoading(false);
     setIsError(true);
-  }, []);
+    onError?.();
+  }, [onError]);
 
   return (
     <div className={cn('relative overflow-hidden', className)}>
@@ -103,7 +106,7 @@ export function OptimizedImage({
  * 响应式图片组件
  * 根据屏幕尺寸自动选择最合适的图片
  */
-interface ResponsiveImageProps extends Omit<OptimizedImageProps, 'sizes'> {
+interface ResponsiveImageProps extends Omit<OptimizedImageProps, 'sizes' | 'src'> {
   srcSet?: {
     mobile?: string;
     tablet?: string;
@@ -166,7 +169,7 @@ export function ProgressiveImage({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const img = new Image();
+    const img = document.createElement('img') as HTMLImageElement;
     img.src = highQualitySrc;
 
     img.onload = () => {
@@ -241,42 +244,6 @@ export function Avatar({
       height={pixelSize}
       className={cn('rounded-full object-cover', className)}
       onError={() => setIsError(true)}
-    />
-  );
-}
-
-/**
- * 图片库组件（虚拟滚动）
- */
-import { VirtualGrid } from './virtual-grid';
-
-interface ImageGalleryProps {
-  images: Array<{
-    src: string;
-    alt: string;
-    width: number;
-    height: number;
-  }>;
-  onLoad?: (index: number) => void;
-}
-
-export function ImageGallery({ images, onLoad }: ImageGalleryProps) {
-  return (
-    <VirtualGrid
-      items={images}
-      renderItem={(image, index) => (
-        <OptimizedImage
-          key={index}
-          src={image.src}
-          alt={image.alt}
-          width={image.width}
-          height={image.height}
-          className="rounded-lg"
-          onLoad={() => onLoad?.(index)}
-        />
-      )}
-      itemHeight={300}
-      gap={16}
     />
   );
 }

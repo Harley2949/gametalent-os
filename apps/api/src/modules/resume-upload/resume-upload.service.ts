@@ -116,9 +116,9 @@ export class ResumeUploadService {
       // PDF 文件
       if (file.mimetype === 'application/pdf') {
         this.logger.log('📕 检测到 PDF 文件，开始解析...');
-        // pdf-parse 2.x 的正确导入方式
-        const pdfParse = await import('pdf-parse');
-        const data = await (pdfParse as any).default(buffer);
+        // 使用 pdf-parse 1.1.1 解析 PDF
+        const pdfParse = require('pdf-parse');
+        const data = await pdfParse(buffer);
         const textLength = data.text.length;
         this.logger.log(`✅ PDF 解析成功，提取文本长度: ${textLength} 字符`);
         return data.text;

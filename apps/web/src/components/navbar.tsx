@@ -1,11 +1,13 @@
 'use client';
 
+import { Button } from '@gametalent/ui';
+import { cn } from '@gametalent/ui';
+import { Briefcase, Users, Calendar, FileText, LogOut, ClipboardList } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Button } from '@gametalent/ui';
+
 import { useAuth } from '@/contexts/auth-context';
-import { Briefcase, Users, Calendar, FileText, LogOut, ClipboardList } from 'lucide-react';
-import { cn } from '@gametalent/ui';
+
 
 export function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();

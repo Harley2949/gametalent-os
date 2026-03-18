@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Button } from '@gametalent/ui';
 import {
   Card,
@@ -33,6 +32,8 @@ import {
   Target,
   Brain,
 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+
 import {
   getBestMatches,
   getMatchStatistics,

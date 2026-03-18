@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@gametalent/ui';
 import { Badge } from '@gametalent/ui';
 import { Separator } from '@gametalent/ui';
@@ -20,6 +19,7 @@ import {
   Loader2,
   RefreshCw,
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface ParsedResume {
   name: string;

@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Button } from '@gametalent/ui';
 import {
   Card,
@@ -31,9 +30,12 @@ import {
   Edit,
   CheckCircle2,
 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+
+import { WorkExperienceFormDialog } from './work-experience-form-dialog';
+
 import { fetchCandidateWorkExperience, deleteWorkExperience } from '@/lib/api';
 import type { WorkExperience } from '@/types/work-experience';
-import { WorkExperienceFormDialog } from './work-experience-form-dialog';
 
 interface WorkExperienceListProps {
   candidateId: string;

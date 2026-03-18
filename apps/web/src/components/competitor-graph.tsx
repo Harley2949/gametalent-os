@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import * as d3 from 'd3';
 import { Card, CardContent, CardHeader, CardTitle } from '@gametalent/ui';
+import * as d3 from 'd3';
+import { useEffect, useRef, useState } from 'react';
 
 interface Node {
   id: string;

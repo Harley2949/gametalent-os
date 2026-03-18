@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
+
 import './globals.css';
-import { AuthProvider } from '@/contexts/auth-context';
-import { ToastProvider } from '@/components/shared/Toast';
 import { ConditionalNavbar } from '@/components/ConditionalNavbar';
+import { ToastProvider } from '@/components/shared/Toast';
+import { AuthProvider } from '@/contexts/auth-context';
 
 export const metadata: Metadata = {
   title: 'GameTalent OS - 游戏行业 AI 原生招聘系统',

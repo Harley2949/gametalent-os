@@ -1,17 +1,12 @@
 'use client';
 
 // React
-import { useState, useEffect } from 'react';
 
 // Next.js
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
 // Hooks
-import { useToast } from '@/components/shared/Toast';
 
 // Shared Components
-import { TableSkeleton, EmptyState, StatsCardSkeleton } from '@/components/shared';
 
 // UI Components
 import { Button } from '@gametalent/ui';
@@ -46,6 +41,12 @@ import {
 
 // Icons
 import { Plus, Search, Filter, X, Eye, Trash2, Users, Briefcase, FileText, TrendingUp, Inbox } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+
+import { TableSkeleton, EmptyState, StatsCardSkeleton } from '@/components/shared';
+import { useToast } from '@/components/shared/Toast';
 
 // Shared Components
 import { BackHeader } from '@/components/ui/BackHeader';

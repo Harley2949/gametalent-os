@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
 import { AlertOctagon, RefreshCw } from 'lucide-react';
+import React from 'react';
 
 interface Props {
   children: React.ReactNode;

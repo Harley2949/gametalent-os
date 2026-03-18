@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@gametalent/ui';
 import { Input } from '@gametalent/ui';
 import { Label } from '@gametalent/ui';
 import { ArrowRight, Mail, Lock, AlertCircle } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useState } from 'react';
 
 export function LoginForm() {
   const router = useRouter();

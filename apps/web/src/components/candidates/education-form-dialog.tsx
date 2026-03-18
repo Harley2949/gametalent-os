@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Button } from '@gametalent/ui';
 import {
   Dialog,
@@ -20,6 +19,8 @@ import {
   SelectValue,
 } from '@gametalent/ui';
 import { Textarea } from '@gametalent/ui';
+import { useState } from 'react';
+
 import type { Education, SchoolType, EducationLevel } from '@/types/education';
 
 interface EducationFormDialogProps {

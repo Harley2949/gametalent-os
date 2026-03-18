@@ -1,10 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useToast } from '@/components/shared/Toast';
-import { BackHeader } from '@/components/ui/BackHeader';
 import {
   Card,
   CardContent,
@@ -40,6 +35,13 @@ import {
   Trash2,
   ChevronRight,
 } from 'lucide-react';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+
+import { JobMatchPanel } from '@/components/jobs/job-match-panel';
+import { useToast } from '@/components/shared/Toast';
+import { BackHeader } from '@/components/ui/BackHeader';
 import {
   fetchJob,
   deleteJob,
@@ -54,7 +56,6 @@ import {
   WorkModeLabels,
   ExperienceLevelLabels,
 } from '@/types/job';
-import { JobMatchPanel } from '@/components/jobs/job-match-panel';
 
 const statusMap = {
   DRAFT: { label: '草稿', color: 'bg-gray-100 text-gray-800' },

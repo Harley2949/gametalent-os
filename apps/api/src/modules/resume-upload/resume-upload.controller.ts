@@ -29,7 +29,7 @@ export class ResumeUploadController {
   @Post('upload')
   @ApiOperation({ summary: '上传并解析简历（PDF/图片，最大5MB）' })
   @ApiConsumes('multipart/form-data')
-  @ApiBearerAuth()
+  // @ApiBearerAuth() // 临时禁用认证以便测试
   @UseInterceptors(FileInterceptor('file'))
   async uploadResume(
     @UploadedFile() file: any,
@@ -37,21 +37,37 @@ export class ResumeUploadController {
     @Body('title') title?: string,
     @Body('isPrimary') isPrimary?: string,
   ) {
+    console.log('📄 收到上传请求');
+    console.log('📄 文件对象:', file ? '存在' : '不存在');
+    console.log('📄 文件详情:', file ? {
+      originalname: file.originalname,
+      mimetype: file.mimetype,
+      size: file.size,
+      buffer: file.buffer ? `Buffer(${file.buffer.length})` : '无buffer'
+    } : '无文件');
+
     if (!file) {
+      console.error('❌ 文件对象为空');
       throw new BadRequestException('请选择要上传的文件');
     }
 
-    const result = await this.resumeUploadService.uploadAndParse(file, {
-      candidateId,
-      title,
-      isPrimary: isPrimary === 'true',
-    });
+    try {
+      const result = await this.resumeUploadService.uploadAndParse(file, {
+        candidateId,
+        title,
+        isPrimary: isPrimary === 'true',
+      });
 
-    return {
-      success: true,
-      message: result.isNewCandidate ? '简历上传成功，已自动创建候选人' : '简历上传成功',
-      data: result,
-    };
+      console.log('✅ 上传成功:', result);
+      return {
+        success: true,
+        message: result.isNewCandidate ? '简历上传成功，已自动创建候选人' : '简历上传成功',
+        data: result,
+      };
+    } catch (error) {
+      console.error('❌ 上传失败:', error);
+      throw error;
+    }
   }
 
   /**

@@ -1,9 +1,5 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { useToast } from '@/components/shared/Toast';
-import { getAuthHeaders } from '@/lib/api';
 import {
   Card,
   CardContent,
@@ -22,8 +18,13 @@ import {
   SelectValue,
 } from '@gametalent/ui';
 import { Badge } from '@gametalent/ui';
-import { X, Plus, GraduationCap, Briefcase, Edit2, Trash2, Upload, FileText, Loader2, CheckCircle } from 'lucide-react';
 import { Textarea } from '@gametalent/ui';
+import { X, Plus, GraduationCap, Briefcase, Edit2, Trash2, Upload, FileText, Loader2, CheckCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState, useRef } from 'react';
+
+import { useToast } from '@/components/shared/Toast';
+import { getAuthHeaders } from '@/lib/api';
 import type { Candidate, CreateCandidateDto, UpdateCandidateDto } from '@/types/candidate';
 
 interface CandidateFormProps {

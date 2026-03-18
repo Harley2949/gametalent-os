@@ -61,3 +61,9 @@ Thumbs.db
 *.key
 secrets/
 .env.backup.*
+
+# Uploads and test files
+**/uploads/
+**/test-resume*.pdf
+**/create-test-pdf.js
+**/test-resume-upload*.js

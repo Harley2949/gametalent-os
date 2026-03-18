@@ -1,9 +1,10 @@
-import { Application, ApplicationStatus, KanbanColumns } from '@/types/application';
 import { Card, CardContent } from '@gametalent/ui';
 import { Badge } from '@gametalent/ui';
 import { Inbox, Clock, Building2, GripVertical, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { memo } from 'react';
+
+import { Application, ApplicationStatus, KanbanColumns } from '@/types/application';
 
 interface KanbanColumnProps {
   status: string;

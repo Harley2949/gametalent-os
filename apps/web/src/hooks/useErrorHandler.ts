@@ -6,6 +6,7 @@
 'use client';
 
 import { useCallback } from 'react';
+
 import { useToast } from '@/components/shared/Toast';
 import {
   ApiError,
@@ -56,7 +57,7 @@ export function useErrorHandler() {
     console.error('API Error:', error);
 
     let message = '操作失败，请稍后重试';
-    let variant: 'error' | 'warning' | 'info' = 'error';
+    const variant: 'error' | 'warning' | 'info' = 'error';
 
     if (error instanceof AuthError) {
       message = '登录已过期，请重新登录';

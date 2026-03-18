@@ -1,6 +1,8 @@
-import { Application, ApplicationStatus, KanbanColumns } from '@/types/application';
-import { KanbanColumn } from './KanbanColumn';
 import { memo } from 'react';
+
+import { KanbanColumn } from './KanbanColumn';
+
+import { Application, ApplicationStatus, KanbanColumns } from '@/types/application';
 
 interface ApplicationKanbanViewProps {
   kanbanData: Record<string, Application[]>;

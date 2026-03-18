@@ -1,10 +1,11 @@
-import { Application } from '@/types/application';
 import { Card, CardContent } from '@gametalent/ui';
 import { Badge } from '@gametalent/ui';
 import { Button } from '@gametalent/ui';
 import { Building2, Mail, Phone, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+
+import { Application } from '@/types/application';
 
 interface ApplicationListViewProps {
   applications: Application[];

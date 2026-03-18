@@ -1,20 +1,20 @@
 'use client';
 
 // React
-import { useState } from 'react';
 
 // Next.js
-import Link from 'next/link';
 
 // UI Components
 import { Button } from '@gametalent/ui';
 
 // Icons
 import { ArrowLeft, Upload } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
 
 // Components
-import { ResumeUploader } from '@/components/resume-uploader';
 import { ResumeParseResult } from '@/components/resume-parse-result';
+import { ResumeUploader } from '@/components/resume-uploader';
 import { BackHeader } from '@/components/ui/BackHeader';
 
 export default function ResumeUploadPage() {

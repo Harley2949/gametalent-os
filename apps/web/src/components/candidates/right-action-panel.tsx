@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@gametalent/ui';
 import { Button } from '@gametalent/ui';
 import {
@@ -18,6 +17,8 @@ import {
   X,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+
 import type { Candidate } from '@/types/candidate';
 
 interface RightActionPanelProps {

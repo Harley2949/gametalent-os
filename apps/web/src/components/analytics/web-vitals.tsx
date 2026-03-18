@@ -17,28 +17,28 @@ export function WebVitals() {
       if (isLoaded) return;
       isLoaded = true;
 
-      const { getCLS, getFID, getFCP, getLCP, getTTFB } = await import('web-vitals');
+      const { onCLS, onINP, onFCP, onLCP, onTTFB } = await import('web-vitals');
 
       // ========================================
       // CLS (Cumulative Layout Shift)
       // ========================================
-      getCLS((metric) => {
+      onCLS((metric) => {
         sendToAnalytics(metric);
         console.log(`CLS: ${metric.value.toFixed(4)} [${metric.rating}]`);
       });
 
       // ========================================
-      // FID (First Input Delay)
+      // INP (Interaction to Next Paint) - replaced FID
       // ========================================
-      getFID((metric) => {
+      onINP((metric) => {
         sendToAnalytics(metric);
-        console.log(`FID: ${metric.value.toFixed(2)}ms [${metric.rating}]`);
+        console.log(`INP: ${metric.value.toFixed(2)}ms [${metric.rating}]`);
       });
 
       // ========================================
       // FCP (First Contentful Paint)
       // ========================================
-      getFCP((metric) => {
+      onFCP((metric) => {
         sendToAnalytics(metric);
         console.log(`FCP: ${metric.value.toFixed(2)}ms [${metric.rating}]`);
       });
@@ -46,7 +46,7 @@ export function WebVitals() {
       // ========================================
       // LCP (Largest Contentful Paint)
       // ========================================
-      getLCP((metric) => {
+      onLCP((metric) => {
         sendToAnalytics(metric);
         console.log(`LCP: ${metric.value.toFixed(2)}ms [${metric.rating}]`);
       });
@@ -54,7 +54,7 @@ export function WebVitals() {
       // ========================================
       // TTFB (Time to First Byte)
       // ========================================
-      getTTFB((metric) => {
+      onTTFB((metric) => {
         sendToAnalytics(metric);
         console.log(`TTFB: ${metric.value.toFixed(2)}ms [${metric.rating}]`);
       });
@@ -119,9 +119,9 @@ export const WebVitalsThresholds = {
     needsImprovement: 4000, // 4s
     poor: Infinity,
   },
-  FID: {
-    good: 100, // 100ms
-    needsImprovement: 300, // 300ms
+  INP: {
+    good: 200, // 200ms
+    needsImprovement: 500, // 500ms
     poor: Infinity,
   },
   CLS: {

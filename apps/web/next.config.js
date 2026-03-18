@@ -5,7 +5,7 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['@prisma/client', '@gametalent/db'],
     // 启用优化
-    optimizeCss: true,
+    // optimizeCss: true, // 禁用：需要 critters 依赖，开发环境不需要
     optimizePackageImports: ['@gametalent/ui', 'recharts', 'd3'],
   },
 

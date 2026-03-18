@@ -1,8 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import {
   Table,
   TableBody,
@@ -33,13 +30,17 @@ import {
   SelectValue,
 } from '@gametalent/ui';
 import { Plus, Search, Filter, X, Trash2, Eye, RefreshCw } from 'lucide-react';
-import { fetchCandidates, deleteCandidate } from '@/lib/api';
-import type { Candidate } from '@/types/candidate';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
 
 // Shared Components
 import { TableSkeleton, EmptyState } from '@/components/shared';
-import { BackHeader } from '@/components/ui/BackHeader';
 import { useToast } from '@/components/shared/Toast';
+import { BackHeader } from '@/components/ui/BackHeader';
+import { fetchCandidates, deleteCandidate } from '@/lib/api';
+import type { Candidate } from '@/types/candidate';
 
 const statusMap = {
   ACTIVE: { label: '活跃', color: 'bg-green-100 text-green-800' },

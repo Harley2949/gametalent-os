@@ -65,13 +65,29 @@ export class ResumeParserService {
   ) {}
 
   async parseResume(file: any, source?: string): Promise<ParsedResume> {
-    // 如果传入的是包含 content 字段的对象（直接提取后的文本）
-    if (file.content && typeof file.content === 'string') {
-      return this.analyzeWithAI(file.content, source);
+    this.logger.log('🚀 parseResume 被调用', {
+      source,
+      hasContent: !!file.content,
+      hasBuffer: !!file.buffer,
+      mimetype: file.mimetype,
+      fileName: file.originalname || file.name || 'unknown'
+    });
+
+    try {
+      // 如果传入的是包含 content 字段的对象（直接提取后的文本）
+      if (file.content && typeof file.content === 'string') {
+        this.logger.log('📄 使用提供的 content，长度:', file.content.length);
+        return this.analyzeWithAI(file.content, source);
+      }
+      // 否则使用原始的文件提取逻辑
+      this.logger.log('📄 需要从文件提取文本');
+      const text = await this.extractText(file);
+      this.logger.log('✅ 文本提取完成，长度:', text.length);
+      return this.analyzeWithAI(text, source);
+    } catch (error) {
+      this.logger.error('❌ parseResume 失败:', error);
+      throw error;
     }
-    // 否则使用原始的文件提取逻辑
-    const text = await this.extractText(file);
-    return this.analyzeWithAI(text, source);
   }
 
   async parseFromURL(url: string, source: string): Promise<ParsedResume> {
@@ -80,8 +96,16 @@ export class ResumeParserService {
   }
 
   private async extractText(file: any): Promise<string> {
+    this.logger.log('📄 extractText 被调用', {
+      hasContent: !!file.content,
+      hasBuffer: !!file.buffer,
+      mimetype: file.mimetype,
+      bufferSize: file.buffer?.length || 0
+    });
+
     // 如果文件已经包含提取的文本内容，直接返回
     if (file.content && typeof file.content === 'string') {
+      this.logger.log('✅ 直接使用已提取的文本，长度:', file.content.length);
       return file.content;
     }
 
@@ -89,16 +113,20 @@ export class ResumeParserService {
     // 注意：这个逻辑应该在调用方处理，这里只是兜底
     if (file.buffer && file.mimetype === 'application/pdf') {
       try {
-        // pdf-parse 2.x 的正确导入方式
-        const pdfParse = await import('pdf-parse');
-        const data = await (pdfParse as any).default(file.buffer);
+        this.logger.log('📕 使用 pdf-parse 1.1.1 提取 PDF 文本...');
+        // 使用 pdf-parse 1.1.1 (CommonJS)
+        const pdfParse = require('pdf-parse');
+        const data = await pdfParse(file.buffer);
+        const textLength = data.text.length;
+        this.logger.log(`✅ PDF 解析成功，文本长度: ${textLength} 字符`);
         return data.text;
       } catch (error) {
-        this.logger.error('PDF 解析失败:', error);
-        throw new Error('PDF 文件解析失败');
+        this.logger.error('❌ PDF 解析失败:', error);
+        throw new Error('PDF 文件解析失败: ' + (error instanceof Error ? error.message : String(error)));
       }
     }
 
+    this.logger.error('❌ 无法提取文件内容');
     throw new Error('无法提取文件内容，请确保文件格式正确');
   }
 
@@ -180,18 +208,23 @@ ${processedText}
 现在请解析上述简历内容，返回JSON格式的结果：`;
 
     try {
+      this.logger.log('🤖 开始调用 AI 服务...');
       const aiResult = await this.ai.invoke(prompt);
 
       // 🔍 调试日志：打印 AI 原始响应
+      this.logger.log(`🤖 AI 响应接收成功，长度: ${aiResult.length} 字符`);
       this.logger.debug(`🤖 AI 原始响应（前500字符）: ${aiResult.substring(0, 500)}...`);
-      this.logger.debug(`🤖 AI 响应完整长度: ${aiResult.length} 字符`);
 
       // 尝试从响应中提取 JSON（处理可能的前后文字）
       const extractedJson = this.extractJSON(aiResult);
 
       if (!extractedJson) {
+        this.logger.error('❌ AI 返回内容中未找到有效 JSON');
+        this.logger.debug('❌ AI 完整响应:', aiResult);
         throw new Error('AI 返回内容中未找到有效 JSON');
       }
+
+      this.logger.log('✅ JSON 提取成功，开始解析...');
 
       // 解析 JSON
       const parsed = JSON.parse(extractedJson);
@@ -218,6 +251,7 @@ ${processedText}
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       this.logger.error(`❌ AI 解析失败: ${errorMessage}`);
+      this.logger.error('❌ 错误堆栈:', error instanceof Error ? error.stack : String(error));
 
       // 降级方案：使用正则提取基础信息
       this.logger.warn('🔄 使用降级方案：正则提取基础信息');
@@ -304,6 +338,8 @@ ${processedText}
    */
   private getFallbackParsedData(originalText: string, errorMessage: string): ParsedResume {
     this.logger.warn('🔄 使用降级方案：正则表达式提取基础信息');
+    this.logger.log(`📄 原始文本长度: ${originalText.length} 字符`);
+    this.logger.log(`❌ AI 解析错误: ${errorMessage}`);
 
     // 提取邮箱
     const emailMatch = originalText.match(/[\w.-]+@[\w.-]+\.\w+/);

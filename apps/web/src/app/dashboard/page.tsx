@@ -1,21 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@gametalent/ui';
 import { Button } from '@gametalent/ui';
 import {
   Briefcase, Users, FileText, Calendar, Plus, ArrowRight, BarChart3,
   Activity, PieChart as PieChartIcon, Clock
 } from 'lucide-react';
-import {
-  fetchJobStats, fetchCandidateStats, fetchApplicationStats, fetchInterviewStats,
-  fetchDashboardOverview, fetchFunnelAnalysis, fetchTimeCycleAnalysis, fetchSourceEffectiveness
-} from '@/lib/api';
+import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis,
   CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
+
+import {
+  fetchJobStats, fetchCandidateStats, fetchApplicationStats, fetchInterviewStats,
+  fetchDashboardOverview, fetchFunnelAnalysis, fetchTimeCycleAnalysis, fetchSourceEffectiveness
+} from '@/lib/api';
 
 interface DashboardStats {
   jobs: { total: number; published: number; draft: number; todayNew: number };

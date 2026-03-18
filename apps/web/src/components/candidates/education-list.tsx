@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Button } from '@gametalent/ui';
 import {
   Card,
@@ -21,9 +20,12 @@ import {
 } from '@gametalent/ui';
 import { Badge } from '@gametalent/ui';
 import { GraduationCap, Calendar, MapPin, Trophy, Plus, Trash2, Edit } from 'lucide-react';
+import { useState, useEffect } from 'react';
+
+import { EducationFormDialog } from './education-form-dialog';
+
 import { fetchCandidateEducation, deleteEducation } from '@/lib/api';
 import type { Education } from '@/types/education';
-import { EducationFormDialog } from './education-form-dialog';
 
 interface EducationListProps {
   candidateId: string;

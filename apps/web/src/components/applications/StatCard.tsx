@@ -1,5 +1,6 @@
-import Link from 'next/link';
 import { Users, TrendingUp, Briefcase } from 'lucide-react';
+import Link from 'next/link';
+
 import { ApplicationStats } from '@/types/application';
 
 interface StatCardProps {

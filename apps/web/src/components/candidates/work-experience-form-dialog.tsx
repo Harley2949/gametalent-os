@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Button } from '@gametalent/ui';
 import {
   Dialog,
@@ -15,6 +14,8 @@ import { Label } from '@gametalent/ui';
 import { Textarea } from '@gametalent/ui';
 import { Switch } from '@gametalent/ui';
 import { Plus, X } from 'lucide-react';
+import { useState } from 'react';
+
 import type { WorkExperience } from '@/types/work-experience';
 
 interface WorkExperienceFormDialogProps {

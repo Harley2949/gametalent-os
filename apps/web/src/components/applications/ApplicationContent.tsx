@@ -1,11 +1,14 @@
 'use client';
 
-import { Application, ApplicationStatus } from '@/types/application';
-import { ApplicationListView } from './ApplicationListView';
-import { ApplicationKanbanView } from './ApplicationKanbanView';
-import { ModuleErrorBoundary } from './ModuleErrorBoundary';
-import { isFeatureEnabled } from '@/lib/featureFlags';
 import { DragEvent } from 'react';
+
+import { ApplicationKanbanView } from './ApplicationKanbanView';
+import { ApplicationListView } from './ApplicationListView';
+import { ModuleErrorBoundary } from './ModuleErrorBoundary';
+
+import { isFeatureEnabled } from '@/lib/featureFlags';
+import { Application, ApplicationStatus } from '@/types/application';
+
 
 interface ApplicationContentProps {
   viewMode: 'list' | 'kanban';

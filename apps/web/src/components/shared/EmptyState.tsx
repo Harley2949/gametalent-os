@@ -1,7 +1,7 @@
 'use client';
 
-import { LucideIcon } from 'lucide-react';
 import { Button } from '@gametalent/ui';
+import { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 
 /**

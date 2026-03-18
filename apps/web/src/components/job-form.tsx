@@ -1,8 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useToast } from '@/components/shared/Toast';
 import { Button } from '@gametalent/ui';
 import { Input } from '@gametalent/ui';
 import { Textarea } from '@gametalent/ui';
@@ -17,6 +14,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@gametalent/ui';
 import { Badge } from '@gametalent/ui';
 import { X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+
+import { useToast } from '@/components/shared/Toast';
 import {
   CreateJobDto,
   UpdateJobDto,

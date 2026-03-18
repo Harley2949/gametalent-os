@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@gametalent/ui';
 import { Button } from '@gametalent/ui';
 import { GraduationCap, Plus, Edit2, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+
 import { updateCandidate } from '@/lib/api';
 
 interface Education {
@@ -69,7 +70,7 @@ export function EducationSection({ candidateId, onUpdate }: EducationSectionProp
       return;
     }
 
-    let newList = [...educationList];
+    const newList = [...educationList];
 
     if (editingIndex !== null) {
       // 编辑现有记录

@@ -1,10 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/auth-context';
 import { Mail, Lock, Sparkles, Crown, User, ArrowRight, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+
 import { TypewriterTitle } from '@/components/TypewriterText';
+import { useAuth } from '@/contexts/auth-context';
+
+
 
 export default function LoginPage() {
   const router = useRouter();

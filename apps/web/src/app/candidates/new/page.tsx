@@ -1,10 +1,11 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useToast } from '@/components/shared/Toast';
 import { ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
 import { CandidateForm } from '@/components/candidate-form';
+import { useToast } from '@/components/shared/Toast';
 import { createCandidate } from '@/lib/api';
 
 export default function NewCandidatePage() {

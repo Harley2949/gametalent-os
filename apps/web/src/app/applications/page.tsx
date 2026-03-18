@@ -1,33 +1,33 @@
 'use client';
 
 // React
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { Button } from '@gametalent/ui';
+import { Badge } from '@gametalent/ui';
+import { Plus } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect, useRef, useCallback, useMemo, Suspense } from 'react';
 
 // Next.js
-import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
 
 // Hooks
+import { ApplicationContent } from '@/components/applications/ApplicationContent';
+import { ApplicationErrorBoundary } from '@/components/applications/ApplicationErrorBoundary';
+import { ApplicationFilters } from '@/components/applications/ApplicationFilters';
+import { ApplicationKanbanView } from '@/components/applications/ApplicationKanbanView';
+import { ApplicationListView } from '@/components/applications/ApplicationListView';
+import { ApplicationStatsCards } from '@/components/applications/ApplicationStatsCards';
 import { useToast } from '@/components/shared/Toast';
 
 // Mock Data
+import { BackHeader } from '@/components/ui/BackHeader';
 import { MOCK_APPLICATIONS, MOCK_STATS, MOCK_CANDIDATES, MOCK_JOBS } from '@/lib/mockData';
 
 // Shared Components
-import { BackHeader } from '@/components/ui/BackHeader';
-import { ApplicationErrorBoundary } from '@/components/applications/ApplicationErrorBoundary';
-import { ApplicationStatsCards } from '@/components/applications/ApplicationStatsCards';
-import { ApplicationFilters } from '@/components/applications/ApplicationFilters';
-import { ApplicationContent } from '@/components/applications/ApplicationContent';
-import { ApplicationListView } from '@/components/applications/ApplicationListView';
-import { ApplicationKanbanView } from '@/components/applications/ApplicationKanbanView';
 
 // UI Components
-import { Button } from '@gametalent/ui';
-import { Badge } from '@gametalent/ui';
 
 // Icons
-import { Plus } from 'lucide-react';
 
 // Types
 import {
@@ -39,7 +39,7 @@ import {
 
 type ViewMode = 'list' | 'kanban';
 
-export default function ApplicationsPage() {
+function ApplicationsPageContent() {
   const searchParams = useSearchParams();
   const toast = useToast();
 
@@ -409,5 +409,21 @@ export default function ApplicationsPage() {
       </div>
     </div>
     </ApplicationErrorBoundary>
+  );
+}
+
+// 包装组件：用 Suspense 包裹以支持 useSearchParams
+export default function ApplicationsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <p className="mt-4 text-gray-600">加载中...</p>
+        </div>
+      </div>
+    }>
+      <ApplicationsPageContent />
+    </Suspense>
   );
 }

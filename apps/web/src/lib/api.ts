@@ -1135,6 +1135,7 @@ export async function createInterview(data: any) {
       applicationId: application.id,
       interviewerId: mockUsers[0].id,
       title: data.title,
+      description: data.description || '',
       type: data.type,
       stage: data.stage,
       scheduledAt: data.scheduledAt,
@@ -1317,7 +1318,7 @@ export async function fetchApplications(params: {
     if (!response.ok) {
       console.warn('⚠️ API调用失败，切换到Mock数据模式');
       useMockData = true;
-      let allApps = Object.values(mockKanbanData).flat();
+      const allApps = Object.values(mockKanbanData).flat();
       return {
         data: allApps,
         total: allApps.length,
@@ -1337,7 +1338,7 @@ export async function fetchApplications(params: {
     // 网络错误或其他异常，切换到mock数据
     console.warn('⚠️ 网络错误或API不可用，切换到Mock数据模式:', error);
     useMockData = true;
-    let allApps = Object.values(mockKanbanData).flat();
+    const allApps = Object.values(mockKanbanData).flat();
     return {
       data: allApps,
       total: allApps.length,

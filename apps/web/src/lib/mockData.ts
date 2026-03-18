@@ -48,7 +48,6 @@ export const MOCK_APPLICATIONS: Application[] = [
       currentTitle: 'Unity 开发工程师',
       location: '深圳',
       yearsOfExperience: 3,
-      tags: ['本科', '3年经验', 'Unity'],
     },
     job: {
       id: 'job_001',
@@ -65,6 +64,9 @@ export const MOCK_APPLICATIONS: Application[] = [
     jobId: 'job_001',
     status: 'HR_INITIAL_CONTACT' as ApplicationStatus,
     appliedAt: '2026-03-11T14:20:00Z',
+    transparencyLevel: 'STANDARD',
+    createdAt: '2026-03-11T14:20:00Z',
+    updatedAt: '2026-03-11T14:20:00Z',
     screeningScore: 80,
     matchScore: 86,
     candidate: {
@@ -90,7 +92,6 @@ export const MOCK_APPLICATIONS: Application[] = [
       location: '深圳',
       status: 'ACTIVE',
     },
-    tags: ['本科', '4年经验', '中大'],
   },
   // 3. 业务筛选中
   {
@@ -99,6 +100,9 @@ export const MOCK_APPLICATIONS: Application[] = [
     jobId: 'job_001',
     status: 'BUSINESS_SCREENING' as ApplicationStatus,
     appliedAt: '2026-03-10T09:15:00Z',
+    transparencyLevel: 'STANDARD',
+    createdAt: '2026-03-11T14:20:00Z',
+    updatedAt: '2026-03-11T14:20:00Z',
     screeningScore: 88,
     matchScore: 90,
     candidate: {
@@ -115,6 +119,7 @@ export const MOCK_APPLICATIONS: Application[] = [
       major: '软件工程',
       graduationYear: 2019,
       yearsOfExperience: 5,
+      status: 'active',
     },
     job: {
       id: 'job_001',
@@ -123,7 +128,6 @@ export const MOCK_APPLICATIONS: Application[] = [
       location: '深圳',
       status: 'ACTIVE',
     },
-    tags: ['硕士', '5年经验', '交大', '米哈游'],
   },
   // 4. 业务初面中
   {
@@ -132,6 +136,9 @@ export const MOCK_APPLICATIONS: Application[] = [
     jobId: 'job_001',
     status: 'BUSINESS_FIRST_INTERVIEW' as ApplicationStatus,
     appliedAt: '2026-03-09T16:45:00Z',
+    transparencyLevel: 'STANDARD',
+    createdAt: '2026-03-11T14:20:00Z',
+    updatedAt: '2026-03-11T14:20:00Z',
     screeningScore: 85,
     matchScore: 88,
     candidate: {
@@ -148,6 +155,7 @@ export const MOCK_APPLICATIONS: Application[] = [
       major: '计算机科学与技术',
       graduationYear: 2018,
       yearsOfExperience: 6,
+      status: 'active',
     },
     job: {
       id: 'job_001',
@@ -156,7 +164,6 @@ export const MOCK_APPLICATIONS: Application[] = [
       location: '深圳',
       status: 'ACTIVE',
     },
-    tags: ['本科', '清华', '6年经验', '字节'],
   },
   // 5. 业务复试中
   {
@@ -165,6 +172,9 @@ export const MOCK_APPLICATIONS: Application[] = [
     jobId: 'job_001',
     status: 'BUSINESS_SECOND_INTERVIEW' as ApplicationStatus,
     appliedAt: '2026-03-08T11:30:00Z',
+    transparencyLevel: 'STANDARD',
+    createdAt: '2026-03-11T14:20:00Z',
+    updatedAt: '2026-03-11T14:20:00Z',
     screeningScore: 90,
     matchScore: 92,
     candidate: {
@@ -181,6 +191,7 @@ export const MOCK_APPLICATIONS: Application[] = [
       major: '计算机科学',
       graduationYear: 2017,
       yearsOfExperience: 7,
+      status: 'active',
     },
     job: {
       id: 'job_001',
@@ -189,7 +200,6 @@ export const MOCK_APPLICATIONS: Application[] = [
       location: '深圳',
       status: 'ACTIVE',
     },
-    tags: ['硕士', '7年经验', '浙大', '莉莉丝'],
   },
   // 6. HR终面
   {
@@ -198,6 +208,9 @@ export const MOCK_APPLICATIONS: Application[] = [
     jobId: 'job_002',
     status: 'HR_FINAL_INTERVIEW' as ApplicationStatus,
     appliedAt: '2026-03-07T10:00:00Z',
+    transparencyLevel: 'STANDARD',
+    createdAt: '2026-03-11T14:20:00Z',
+    updatedAt: '2026-03-11T14:20:00Z',
     screeningScore: 92,
     matchScore: 94,
     candidate: {
@@ -214,14 +227,15 @@ export const MOCK_APPLICATIONS: Application[] = [
       major: '艺术设计',
       graduationYear: 2018,
       yearsOfExperience: 6,
+      status: 'active',
     },
     job: {
       id: 'job_002',
       title: '技术美术（TA）',
       department: '美术部',
       location: '上海',
+      status: 'ACTIVE',
     },
-    tags: ['硕士', '6年经验', '美院', 'TA'],
   },
   // 7. CEO面
   {
@@ -230,6 +244,9 @@ export const MOCK_APPLICATIONS: Application[] = [
     jobId: 'job_001',
     status: 'CEO_INTERVIEW' as ApplicationStatus,
     appliedAt: '2026-03-06T14:30:00Z',
+    transparencyLevel: 'STANDARD',
+    createdAt: '2026-03-11T14:20:00Z',
+    updatedAt: '2026-03-11T14:20:00Z',
     screeningScore: 95,
     matchScore: 96,
     candidate: {
@@ -246,6 +263,7 @@ export const MOCK_APPLICATIONS: Application[] = [
       major: '计算机科学',
       graduationYear: 2016,
       yearsOfExperience: 8,
+      status: 'active',
     },
     job: {
       id: 'job_001',
@@ -254,7 +272,6 @@ export const MOCK_APPLICATIONS: Application[] = [
       location: '深圳',
       status: 'ACTIVE',
     },
-    tags: ['博士', '8年经验', '斯坦福', '腾讯'],
   },
   // 8. Offer中
   {
@@ -263,6 +280,9 @@ export const MOCK_APPLICATIONS: Application[] = [
     jobId: 'job_001',
     status: 'OFFER_PENDING' as ApplicationStatus,
     appliedAt: '2026-03-05T09:00:00Z',
+    transparencyLevel: 'STANDARD',
+    createdAt: '2026-03-11T14:20:00Z',
+    updatedAt: '2026-03-11T14:20:00Z',
     screeningScore: 93,
     matchScore: 95,
     candidate: {
@@ -279,6 +299,7 @@ export const MOCK_APPLICATIONS: Application[] = [
       major: '软件工程',
       graduationYear: 2017,
       yearsOfExperience: 7,
+      status: 'active',
     },
     job: {
       id: 'job_001',
@@ -287,7 +308,6 @@ export const MOCK_APPLICATIONS: Application[] = [
       location: '深圳',
       status: 'ACTIVE',
     },
-    tags: ['硕士', '7年经验', '北大', 'FunPlus'],
   },
   // 9. 待入职
   {
@@ -296,6 +316,9 @@ export const MOCK_APPLICATIONS: Application[] = [
     jobId: 'job_003',
     status: 'PENDING_ONBOARDING' as ApplicationStatus,
     appliedAt: '2026-03-01T10:30:00Z',
+    transparencyLevel: 'STANDARD',
+    createdAt: '2026-03-11T14:20:00Z',
+    updatedAt: '2026-03-11T14:20:00Z',
     screeningScore: 94,
     matchScore: 97,
     candidate: {
@@ -312,14 +335,15 @@ export const MOCK_APPLICATIONS: Application[] = [
       major: '计算机科学',
       graduationYear: 2016,
       yearsOfExperience: 8,
+      status: 'active',
     },
     job: {
       id: 'job_003',
       title: '游戏服务器开发工程师',
       department: '技术部',
       location: '上海',
+      status: 'ACTIVE',
     },
-    tags: ['硕士', '8年经验', '清华', '架构师'],
   },
   // 10. 已入职
   {
@@ -328,6 +352,9 @@ export const MOCK_APPLICATIONS: Application[] = [
     jobId: 'job_001',
     status: 'HIRED' as ApplicationStatus,
     appliedAt: '2026-02-20T11:00:00Z',
+    transparencyLevel: 'STANDARD',
+    createdAt: '2026-03-11T14:20:00Z',
+    updatedAt: '2026-03-11T14:20:00Z',
     screeningScore: 96,
     matchScore: 98,
     candidate: {
@@ -344,6 +371,7 @@ export const MOCK_APPLICATIONS: Application[] = [
       major: '软件工程',
       graduationYear: 2018,
       yearsOfExperience: 6,
+      status: 'active',
     },
     job: {
       id: 'job_001',
@@ -352,7 +380,6 @@ export const MOCK_APPLICATIONS: Application[] = [
       location: '深圳',
       status: 'ACTIVE',
     },
-    tags: ['硕士', '6年经验', '复旦', '已入职'],
   },
   // 11. 已归档
   {
@@ -361,6 +388,9 @@ export const MOCK_APPLICATIONS: Application[] = [
     jobId: 'job_002',
     status: 'ARCHIVED' as ApplicationStatus,
     appliedAt: '2026-02-15T14:00:00Z',
+    transparencyLevel: 'STANDARD',
+    createdAt: '2026-03-11T14:20:00Z',
+    updatedAt: '2026-03-11T14:20:00Z',
     screeningScore: 70,
     matchScore: 75,
     candidate: {
@@ -377,14 +407,15 @@ export const MOCK_APPLICATIONS: Application[] = [
       major: '计算机科学',
       graduationYear: 2019,
       yearsOfExperience: 5,
+      status: 'active',
     },
     job: {
       id: 'job_002',
       title: '技术美术（TA）',
       department: '美术部',
       location: '上海',
+      status: 'ACTIVE',
     },
-    tags: ['本科', '5年经验', '北理', '已归档'],
   },
   // 12. 黑名单
   {
@@ -393,6 +424,9 @@ export const MOCK_APPLICATIONS: Application[] = [
     jobId: 'job_001',
     status: 'BLACKLISTED' as ApplicationStatus,
     appliedAt: '2026-02-10T10:00:00Z',
+    transparencyLevel: 'STANDARD',
+    createdAt: '2026-03-11T14:20:00Z',
+    updatedAt: '2026-03-11T14:20:00Z',
     screeningScore: 85,
     matchScore: 88,
     candidate: {
@@ -409,6 +443,7 @@ export const MOCK_APPLICATIONS: Application[] = [
       major: '软件工程',
       graduationYear: 2019,
       yearsOfExperience: 5,
+      status: 'active',
     },
     job: {
       id: 'job_001',
@@ -417,7 +452,6 @@ export const MOCK_APPLICATIONS: Application[] = [
       location: '深圳',
       status: 'ACTIVE',
     },
-    tags: ['硕士', '5年经验', '黑名单', '竞业限制'],
   },
   // 更多已投递的候选人（用于测试）
   ...Array.from({ length: 7 }, (_, i) => ({
@@ -426,6 +460,9 @@ export const MOCK_APPLICATIONS: Application[] = [
     jobId: 'job_001',
     status: 'APPLIED' as ApplicationStatus,
     appliedAt: new Date(Date.now() - i * 86400000).toISOString(),
+    transparencyLevel: 'STANDARD' as const,
+    createdAt: '2026-03-11T14:20:00Z',
+    updatedAt: '2026-03-11T14:20:00Z',
     screeningScore: 70 + Math.random() * 20,
     matchScore: 75 + Math.random() * 20,
     candidate: {
@@ -436,6 +473,7 @@ export const MOCK_APPLICATIONS: Application[] = [
       currentCompany: `公司${i + 1}`,
       currentTitle: '游戏开发工程师',
       yearsOfExperience: Math.floor(Math.random() * 8) + 1,
+      status: 'active',
     },
     job: {
       id: 'job_001',

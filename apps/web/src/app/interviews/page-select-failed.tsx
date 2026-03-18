@@ -1,8 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import {
   Table,
   TableBody,
@@ -36,14 +33,18 @@ import {
   X,
   Inbox
 } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
+import { TableSkeleton, EmptyState } from '@/components/shared';
+import { BackHeader } from '@/components/ui/BackHeader';
 import { fetchInterviews, deleteInterview } from '@/lib/api';
 import {
   InterviewStatusLabels,
   InterviewTypeLabels,
   InterviewStageLabels
 } from '@/types/interview';
-import { BackHeader } from '@/components/ui/BackHeader';
-import { TableSkeleton, EmptyState } from '@/components/shared';
 
 const statusMap = {
   SCHEDULED: { label: '已安排', color: 'bg-blue-100 text-blue-800' },

@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@gametalent/ui';
 import { Clock, CheckCircle2, XCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface StageHistoryEntry {
   id: string;

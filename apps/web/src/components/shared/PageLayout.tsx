@@ -1,6 +1,5 @@
 'use client';
 
-import { ReactNode } from 'react';
 import { Button } from '@gametalent/ui';
 import { Input } from '@gametalent/ui';
 import {
@@ -11,6 +10,7 @@ import {
   SelectValue,
 } from '@gametalent/ui';
 import { Plus, Search, X } from 'lucide-react';
+import { ReactNode } from 'react';
 
 interface PageHeaderProps {
   title: string;

@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@gametalent/ui';
 import {
   Select,
@@ -9,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@gametalent/ui';
+import { useState, useEffect } from 'react';
 import {
   BarChart,
   Bar,

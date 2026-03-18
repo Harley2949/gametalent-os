@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@gametalent/ui';
 import { Mail, Phone, MapPin, Linkedin, Github, Globe } from 'lucide-react';
+
 import type { Candidate } from '@/types/candidate';
 
 interface ContactInfoCardProps {

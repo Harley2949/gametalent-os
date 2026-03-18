@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@gametalent/ui';
 import { Button } from '@gametalent/ui';
 import { Briefcase, Plus, Edit2, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+
 import { updateCandidate } from '@/lib/api';
 
 interface WorkExperience {
@@ -69,7 +70,7 @@ export function WorkExperienceSection({ candidateId, onUpdate }: WorkExperienceS
       return;
     }
 
-    let newList = [...workList];
+    const newList = [...workList];
 
     if (editingIndex !== null) {
       // 编辑现有记录
